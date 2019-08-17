@@ -10,6 +10,11 @@ from constants import *
 from tools.assertions import is_2D_data
 
 from tools.config_ops import digest_config
+from tools.config_ops import digest_locals
+
+from tools.simple_functions import get_color_rgb
+from tools.simple_functions import modify_point
+from tools.simple_functions import unit_to_point
 
 from tools.space_ops import abs_arg_pair
 from tools.space_ops import abs_C
@@ -17,10 +22,6 @@ from tools.space_ops import arg_C
 from tools.space_ops import arg_principle
 from tools.space_ops import flip_about_x_axis
 from tools.space_ops import shift
-
-from tools.simple_functions import get_color_rgb
-from tools.simple_functions import modify_point
-from tools.simple_functions import unit_to_point
 
 
 class Mobject(object):
@@ -63,10 +64,9 @@ class Line(Mobject):
     }
 
     def __init__(self, start_point, end_point, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
         assert is_2D_data(start_point, end_point)
-        self.start_point = start_point
-        self.end_point = end_point
 
     def generate(self, ctx, size):
         ctx.move_to(*unit_to_point(modify_point(self.start_point, size)))
@@ -104,10 +104,9 @@ class Arc(Mobject):
 
 class ArcBetweenPoints(Arc):
     def __init__(self, start_point, end_point, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
         assert is_2D_data(start_point, end_point)
-        self.start_point = start_point
-        self.end_point = end_point
         arc_center, radius, start_angle = self.get_stuff()
         Arc.__init__(
             self,
@@ -148,8 +147,8 @@ class TextPartial(Mobject):
     }
 
     def __init__(self, text, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
-        self.text = text
         self.init_height()
 
     def font_to_height(self, font_size):

@@ -12,6 +12,8 @@ from tools.assertions import is_2D_data
 from tools.assertions import is_standard_route
 from tools.assertions import station_on_route
 
+from tools.config_ops import digest_locals
+
 from tools.numpy_type_tools import float64
 from tools.numpy_type_tools import int64
 
@@ -42,10 +44,12 @@ class LineArcCurve(Mobject):
     }
 
     def __init__(self, *control_points, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
         assert is_2D_data(*control_points)
-        self.control_points = control_points
-        self.num_arcs = len(control_points) if self.loop else len(control_points) - 2
+        self.num_arcs = len(control_points)
+        if not self.loop:
+            self.num_arcs -= 2
 
     def get_real_points_and_angles(self):
         points = self.control_points
@@ -98,8 +102,8 @@ class Route(Mobject):
     }
 
     def __init__(self, *control_points, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
-        self.control_points = control_points
         self.init_components()
 
     def init_components(self):
@@ -133,9 +137,8 @@ class StationFrame(Mobject):
     }
 
     def __init__(self, center_point, station_size, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
-        self.center_point = center_point
-        self.station_size = station_size
         self.station_type = "normal" if self.station_size == 1 else "interchange"
         self.frame_radius = self.get_frame_radius()
         self.frame_stroke_width = self.get_frame_stroke_width()
@@ -215,9 +218,8 @@ class Station(Mobject):
     }
 
     def __init__(self, center_point, route_colors, **kwargs):
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
-        self.center_point = center_point
-        self.route_colors = route_colors
         self.station_size = len(route_colors)
         self.init_components()
 
@@ -324,10 +326,8 @@ class Metro(Mobject):
 
     def __init__(self, serial_num, color, stations_data, **kwargs):
         global global_station_data_dict
+        digest_locals(self)
         Mobject.__init__(self, **kwargs)
-        self.serial_num = serial_num
-        self.color = color
-        self.stations_data = stations_data
         self.digest_stations_data()
         self.init_control_points()
         self.init_components()

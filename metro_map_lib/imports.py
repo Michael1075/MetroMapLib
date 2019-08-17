@@ -5,6 +5,7 @@ from drawing import *
 from mobject.composite_mobject import *
 from mobject.mobject import *
 from mobject.misc import *
+
 from tools.assertions import *
 from tools.config_ops import *
 from tools.numpy_type_tools import *

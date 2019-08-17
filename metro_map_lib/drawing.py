@@ -36,8 +36,8 @@ class Drawing(object):
             print(component, component.layer)
 
 
-def create_PDF_context(file_name, width, height):
-    surface = cairo.PDFSurface(
+def create_context(file_name, surface_func, width, height):
+    surface = surface_func(
         file_name,
         unit_to_point(width),
         unit_to_point(height)
@@ -47,15 +47,27 @@ def create_PDF_context(file_name, width, height):
     return surface, ctx, size
 
 
-def main(DrawingClass, file_name, width, height, open_at_once = True, test_time = False):
-    if test_time:
-        begin = time.time()
-    surface, ctx, size = create_PDF_context(file_name, width, height)
+def construct_file(DrawingClass, file_name, width, height):
+    """
+    Support .pdf, .svg
+    """
+    assert any([file_name.endswith(suffix) for suffix in (".pdf", ".svg")])
+    if file_name.endswith(".pdf"):
+        surface_func = cairo.PDFSurface
+    else:
+        surface_func = cairo.SVGSurface
+    surface, ctx, size = create_context(file_name, surface_func, width, height)
     drawing = DrawingClass()
     for component in drawing.components:
         ctx = component.on_draw(ctx, size)
     ctx.show_page()
     surface.finish()
+
+
+def main(DrawingClass, file_name, width, height, open_at_once = True, test_time = False):
+    if test_time:
+        begin = time.time()
+    construct_file(DrawingClass, file_name, width, height)
     if test_time:
         end = time.time()
         print("Elapsed time: %.3f second(s)" % (end - begin))

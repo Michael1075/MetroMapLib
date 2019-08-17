@@ -1,0 +1,12 @@
+Font:
+standard CSS2 generic family names: "serif", "sans-serif", "cursive", "fantasy", "monospace"
+font faces: "Times", "Verdana", "Helvetica", "Arial"
+fint faces chn: "STFangsong", "STKaiti", "STXihei"
+Reference:
+https://www.w3.org/TR/css-fonts-3/
+https://www.w3.org/TR/css-fonts-3/
+https://www.w3school.com.cn/css/css_font-family.asp
+https://www.cnblogs.com/zytrue/p/8567966.html
+
+SVG Tools:
+https://github.com/Kozea/CairoSVG
