@@ -1,0 +1,51 @@
+把整个svg文件转为cairo命令的class
+参考svg_mobject.py class VMobjectFromSVGPathstring
+
+将tex文件转为svg文件
+参考tex_file_writing
+
+text 应用manim的方式
+
+
+本project于2019/8/17起暂停，代码保存于GitHub
+
+
+2019/10/1
+
+去cairo化
+直接编辑xml文件成为svg
+
+整理所有“#”以及文档头文件
+
+
+宽180处一线宽度-2（修改input）
+
+在线 svg转pdf
+http://www.fileformat.info/convert/image/svg2pdf.htm
+在线运行svg文件
+https://www.runoob.com/try/try.php?filename=trysvg_path
+
+代码未保存于GitHub
+
+clipPath
+以及翀斌图片
+
+2019/10/13
+
+2019/10/18
+
+2019/10/25
+
+TODO
+线路号，区名，水域名
+磁悬浮，金山铁路
+np_int函数是否有用？
+
+
+2019/11/2
+
+python 多进程 > 普通 > 多线程 (GIL)
+https://blog.csdn.net/To_be_to_thought/article/details/93662320
+
+github 上传代码
+https://blog.csdn.net/qq_41569946/article/details/88369047
