@@ -447,11 +447,11 @@
 <use x="374" xlink:href="#n24" y="280"/>
 <use x="374" xlink:href="#n24" y="290"/>
 </g>
+<rect height="2.1" id="v2" rx="0.55" ry="0.55" width="1.1" x="-0.55" y="-0.55"/>
 <rect height="1.1" id="h2" rx="0.55" ry="0.55" width="2.1" x="-0.55" y="-0.55"/>
+<rect height="3.1" id="v3" rx="0.55" ry="0.55" width="1.1" x="-0.55" y="-0.55"/>
 <rect height="4.1" id="v4" rx="0.55" ry="0.55" width="1.1" x="-0.55" y="-0.55"/>
 <rect height="1.1" id="h4" rx="0.55" ry="0.55" width="4.1" x="-0.55" y="-0.55"/>
-<rect height="2.1" id="v2" rx="0.55" ry="0.55" width="1.1" x="-0.55" y="-0.55"/>
-<rect height="3.1" id="v3" rx="0.55" ry="0.55" width="1.1" x="-0.55" y="-0.55"/>
 <rect height="1.1" id="h3" rx="0.55" ry="0.55" width="3.1" x="-0.55" y="-0.55"/>
 <g id="interchange_station_frame" style="stroke:#000000;stroke-width:0.1">
 <use x="116" xlink:href="#h2" y="110"/>

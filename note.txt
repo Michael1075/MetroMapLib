@@ -3,7 +3,6 @@ The project is paused. The code is available on GitHub.
 
 2019/10/1
 Check all "#" character and sort the head files.
-Modify width -2 on line x = 180
 Run SVG online: https://www.runoob.com/try/try.php?filename=trysvg_path
 
 2019/10/13
