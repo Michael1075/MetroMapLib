@@ -26,25 +26,26 @@ Run on cmd to git:
 # add code
 git init
 git add . #add all files
-git commit "Commit changes"
+git commit -m "Commit changes"
 git remote add origin https://github.com/Michael1075/MetroMapLib.git
-*git remote -v
-*git remote remove origin
-*git pull --rebase origin master
 git push origin master
 
 # add a file or a folder
 git init
 git add README.md #the target file or folder
 git commit -m "Write a README file"
-*git push -h
 git push -u origin master
 
 # remove a file or a folder
-git --help
-git pull origin master
-*dir
 git rm -r --cached metro_map_lib #the target file or folder
 git commit -m "Delete the old files"
 git push -u origin master
 
+# other useable commands
+dir
+git remote -v
+git remote remove origin
+git pull --rebase origin master
+git --help
+git pull origin master
+git push -h
