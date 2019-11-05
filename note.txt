@@ -37,6 +37,8 @@ git push origin master
 git init
 git add README.md #the target file or folder
 git commit -m "Write a README file"
+*git push -h
+git push -u origin master
 
 # remove a file or a folder
 git --help
@@ -44,4 +46,5 @@ git pull origin master
 *dir
 git rm -r --cached metro_map_lib #the target file or folder
 git commit -m "Delete the old files"
+git push -u origin master
 
