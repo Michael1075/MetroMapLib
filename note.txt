@@ -23,7 +23,7 @@ https://blog.csdn.net/To_be_to_thought/article/details/93662320
 Reference: https://blog.csdn.net/qq_41569946/article/details/88369047
 Run on cmd to git:
 
-# add code
+# add new repository
 git init
 git add . #add all files
 git commit -m "Commit changes"
@@ -31,7 +31,6 @@ git remote add origin https://github.com/Michael1075/MetroMapLib.git
 git push origin master
 
 # add a file or a folder
-git init
 git add README.md #the target file or folder
 git commit -m "Write a README file"
 git push -u origin master
