@@ -24,8 +24,14 @@ Run on cmd to git:
 # add new repository
 git init
 git add . #add all files
-git commit -m "Commit changes"
+git commit -m "Create new repository"
 git remote add origin https://github.com/Michael1075/MetroMapLib.git
+git push origin master
+
+# update whole repository
+git init
+git add . #add all files
+git commit -m "Update files via changed"
 git push origin master
 
 # add a file or a folder
