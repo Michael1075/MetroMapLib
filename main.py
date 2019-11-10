@@ -1,6 +1,6 @@
-import svg
+import maplib
 
 
 if __name__ == "__main__":
-    svg.main()
+    maplib.main()
 

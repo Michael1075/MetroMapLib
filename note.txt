@@ -13,7 +13,6 @@ Run SVG online: https://www.runoob.com/try/try.php?filename=trysvg_path
 TODO
 serial num, district name, water area name
 Maglev Line, Jinshan Railway
-Is np_int function useful?
 
 2019/11/2
 python multiprocessing > normal > threadings (GIL)
@@ -47,3 +46,7 @@ git pull --rebase origin master
 git --help
 git pull origin master
 git push -h
+
+2019/11/10
+TODO
+Jiamin Line, Airport Line

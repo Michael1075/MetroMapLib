@@ -1,6 +1,6 @@
 import multiprocessing as mp
 
-from tools.time_ops import test_time
+from maplib.tools.time_ops import test_time
 
 
 CONST = 1000000

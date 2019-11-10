@@ -10,4 +10,4 @@ Note, it takes about 10 sec to write a tex file to an svg file, so if some tex a
 However, if all tex are settled, the main process only takes about 10 sec.
 
 ## View SVG
-SVG is a short for Scalable Vector Graphics, which can be viewed simply in a chrome. Here, Google Chrome is recommended.
+SVG is a short for Scalable Vector Graphics, which can be viewed simply in a chrome. Google Chrome is recommended.
