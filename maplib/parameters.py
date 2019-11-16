@@ -25,8 +25,8 @@ SVG_VERSION = "1.1"
 SVG_XMLNS = "http://www.w3.org/2000/svg"
 SVG_XLINK = "http://www.w3.org/1999/xlink"
 SVG_HEAD = "".join([
-	'<?xml version="1.0" standalone="no"?>',
-	'<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
+    '<?xml version="1.0" standalone="no"?>',
+    '<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">',
 ])
 
 # base settings
@@ -55,6 +55,7 @@ WATER_AREA_COLOR = Color(199, 233, 241)
 # route and station
 ROUTE_ARC_RADIUS = 2.0
 ROUTE_STROKE_WIDTH = 0.8
+ROUTE_MINOR_STROKE_WIDTH = 0.3
 ROUTE_STROKE_OPACITY = 0.7
 STATION_POINT_RADIUS = 0.4
 STATION_POINT_FILL_OPACITY = 1.0

@@ -1,0 +1,4 @@
+numpy==1.17.4
+openpyxl==3.0.1
+reportlab==3.5.32
+svglib==0.9.3

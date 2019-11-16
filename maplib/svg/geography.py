@@ -7,15 +7,15 @@ from maplib.svg.path_types import YPath
 from maplib.svg.svg_element import Circle
 from maplib.svg.svg_element import Group
 from maplib.svg.svg_element import Rectangle
+from maplib.svg.web_system import FrameRectangle
 from maplib.tools.config_ops import digest_locals
 from maplib.tools.space_ops import rotate
 from maplib.tools.space_ops import unify_vector
 
 
-class BackgroundRectangle(Rectangle):
+class BackgroundRectangle(FrameRectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name)
-        self.set_rect_size(SIZE)
+        FrameRectangle.__init__(self, id_name)
         self.set_style({
             "fill": WATER_AREA_COLOR,
         })

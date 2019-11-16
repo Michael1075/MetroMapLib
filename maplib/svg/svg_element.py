@@ -5,6 +5,8 @@ from maplib.parameters import *
 
 from maplib.tools.assertions import is_number
 from maplib.tools.simple_functions import modify_num
+from maplib.tools.simple_functions import nums_to_string
+from maplib.tools.simple_functions import string_to_nums
 from maplib.utils.style import Style
 
 
@@ -15,7 +17,7 @@ class ETElement(ET.Element):
 
 class Element(ETElement):
     def __init__(self, id_name = None):
-        self.init_attr()
+        self.init_attr_dict()
         self.init_id(id_name)
         self.init_attrs()
         ETElement.__init__(self)
@@ -43,7 +45,7 @@ class Element(ETElement):
         self.attrib[key] = self.attr_val_to_str(val)
         return self
 
-    def init_attr(self):
+    def init_attr_dict(self):
         self.attrib = dict()
         return self
 
@@ -91,10 +93,15 @@ class Group(Element):
         self.append(use_obj)
         return self
 
+    def use_with_style(self, href_id_name, style_dict, relative_coord = None):
+        use_obj = Use(href_id_name, relative_coord)
+        use_obj.set_style(style_dict)
+        self.append(use_obj)
+        return self
+
     def set_transform(self, prefix, transform_tuple):
         assert prefix in ("matrix", "translate")
-        strs = [str(modify_num(val)) for val in transform_tuple]
-        transform_str = "{0}({1})".format(prefix, " ".join(strs))
+        transform_str = "{0}({1})".format(prefix, nums_to_string(transform_tuple))
         self.set_attr_val("transform", transform_str)
         return self
 
@@ -115,17 +122,38 @@ class Group(Element):
         return self
 
     def scale(self, scale_val):
-        matrix_tuple = (scale_val, 0.0, 0.0, scale_val, 0.0, 0.0)
+        matrix_tuple = (scale_val, 0, 0, scale_val, 0, 0)
         self.matrix(matrix_tuple)
         return self
 
     def flip_y(self, scale_val = 1.0):
-        matrix_tuple = (scale_val, 0.0, 0.0, -scale_val, 0.0, HEIGHT)
+        matrix_tuple = (scale_val, 0, 0, -scale_val, 0, HEIGHT)
         self.matrix(matrix_tuple)
         return self
 
     def flip_y_for_tex(self):
         self.flip_y(TEX_BASE_SCALE_FACTOR)
+        return self
+
+
+class Mask(Element):
+    tag_name = "mask"
+    attr_names = ("id", "maskUnits", "style")
+    allow_append = True
+
+    def init_attrs(self):
+        self.set_attr_val("maskUnits", "userSpaceOnUse")
+        return self
+
+    def use(self, href_id_name, relative_coord = None):
+        use_obj = Use(href_id_name, relative_coord)
+        self.append(use_obj)
+        return self
+
+    def use_with_style(self, href_id_name, style_dict, relative_coord = None):
+        use_obj = Use(href_id_name, relative_coord)
+        use_obj.set_style(style_dict)
+        self.append(use_obj)
         return self
 
 
@@ -159,7 +187,7 @@ class Path(Element):
     def add_path_command(self, command, *cmd_vals):
         assert len(cmd_vals) == self.command_num_dict[command]
         assert command == "M" or self.path_strings
-        command_str = command + " ".join([str(modify_num(val)) for val in cmd_vals])
+        command_str = command + nums_to_string(cmd_vals)
         self.path_strings.append(command_str)
         return self
 
@@ -173,7 +201,7 @@ class Path(Element):
             if self.command_num_dict[command] == 0:
                 self.add_path_command(command)
             else:
-                cmd_vals = [eval(val_str) for val_str in attr_val_str.split(" ")]
+                cmd_vals = string_to_nums(attr_val_str)
                 self.add_path_command(command, *cmd_vals)
         return self
 
@@ -211,7 +239,7 @@ class Path(Element):
         x, y: the coordinate of end point
         """
         rx = ry = radius
-        x_axis_rotation = 0.0
+        x_axis_rotation = 0
         x, y = coord
         self.add_path_command("A", rx, ry, x_axis_rotation, large_arc_flag, sweep_flag, x, y)
         return self
@@ -275,7 +303,7 @@ class Use(Element):
     allow_append = False
 
     def __init__(self, href_id_name, relative_coord = None):
-        self.init_attr()
+        self.init_attr_dict()
         self.init_href_id_name(href_id_name)
         self.set_relative_coord(relative_coord)
         ETElement.__init__(self)

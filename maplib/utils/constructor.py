@@ -1,5 +1,5 @@
-from openpyxl import load_workbook
 import copy
+import openpyxl
 
 from maplib.constants import *
 from maplib.parameters import *
@@ -13,10 +13,13 @@ from maplib.tools.position import position
 from maplib.tools.simple_functions import adjacent_n_tuples
 from maplib.tools.simple_functions import get_first_item
 from maplib.tools.simple_functions import shrink_value
+from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import midpoint
 from maplib.tools.space_ops import num_to_base_direction
 from maplib.tools.space_ops import rotate
 from maplib.tools.space_ops import solve_intersection_point
+from maplib.tools.table_tools import get_row_val
+from maplib.tools.table_tools import get_table_val
 from maplib.utils.color import Color
 
 
@@ -25,23 +28,24 @@ class Metro(object):
     About input:
     serial_num: an int;
     metro_name: a str;
-    color: a Color obj;
+    main_color: a Color obj;
+    sub_color: either a Color obj, None or "None";
     route_type: a str in ("l", "o", "y");
     stations_data: an array-like database, each of which should be of length 7 and be the following format:
         tuple(
             station_name_eng: a str,
             station_name_chn: a str,
+            sign: either "*", "^" or "#" (
+                if "*", the station_obj will not be built;
+                if "^" or "#", a y-type route will be built
+            ),
             station_x_coord: an int,
             station_y_coord: an int,
             simplified_direction: a positive integer in range(4),
-            label_direction_num: a positive integer in range(8),
-            sign: either "*", "^" or "#" (
-                if "*", the station_obj will not be built;
-                if "^" or "#", then a y-type routewill be built
-            )
+            label_direction_num: a positive integer in range(8)
         ).
     """
-    def __init__(self, serial_num, metro_name, color, route_type, stations_data):
+    def __init__(self, serial_num, metro_name, main_color, sub_color, route_type, stations_data):
         digest_locals(self)
         self.init_dicts()
         self.digest_stations_data()
@@ -64,6 +68,7 @@ class Metro(object):
         dict_key: a tuple of a real station
         dict_value: tuple(
             station_color,
+            sub_color,
             station_name_eng,
             station_name_chn,
             label_direction
@@ -122,7 +127,7 @@ class Metro(object):
             if station_data[0] != "*":
                 station_on_route(station_coord, control_points, self.loop)
                 real_station_data = list(station_data)[1:]
-                real_station_data.insert(0, self.color)
+                real_station_data = [self.main_color, self.sub_color] + real_station_data
                 self.real_stations_data_dict[np_to_tuple(station_coord)] = tuple(real_station_data)
         return self
 
@@ -176,7 +181,7 @@ class Metro(object):
 
 
 class Station(object):
-    def __init__(self, positioned_point, route_colors, station_direction, station_name_eng, station_name_chn, label_direction):
+    def __init__(self, positioned_point, route_colors, sub_colors, station_direction, station_name_eng, station_name_chn, label_direction):
         station_size = len(route_colors)
         digest_locals(self)
 
@@ -197,36 +202,26 @@ class MetroBuilder(object):
         self.digest_data_and_build(file_name)
 
     def digest_data_and_build(self, file_name):
-        database = load_workbook(filename = file_name)
+        database = openpyxl.load_workbook(filename = file_name)
+        num_metros = len(database.worksheets) - 1
         main_sheet = database["Main"]
-        for k in range(1, len(database.worksheets)):
-            metro_basic_data = tuple([
-                cell.value
-                for cell in main_sheet["A{0}:G{0}".format(k)][0]
-            ])
+        for k in range(num_metros):
+            metro_basic_data = get_row_val(main_sheet, row_index = k, max_column = 6)
             metro_name, metro_name_chn, metro_serial_num, \
-                red, green, blue, route_type = metro_basic_data
-            metro_color = Color(red, green, blue)
-            #if special_control_point is not None:
-            #    special_control_point = eval(special_control_point)
-            #if special_arc_radius is not None:
-            #    special_arc_radius = eval(special_arc_radius)
-            metro_stations_data_table = database[metro_name]
-            metro_stations_data = tuple([
-                tuple([
-                    row[row_index].value
-                    for row_index in range(7)
-                ])
-                for row in metro_stations_data_table
-            ])
+                main_color_str, sub_color_str, route_type = metro_basic_data
+            main_color = Color(*string_to_nums(main_color_str))
+            if sub_color_str is not None and sub_color_str != "None":
+                sub_color = Color(*string_to_nums(sub_color_str))
+            else:
+                sub_color = sub_color_str
+            metro_stations_data = get_table_val(database[metro_name], max_column = 7)
             metro = Metro(
                 metro_serial_num,
                 metro_name,
-                metro_color,
+                main_color,
+                sub_color,
                 route_type,
-                metro_stations_data,
-                #special_control_point = special_control_point,
-                #special_arc_radius = special_arc_radius
+                metro_stations_data
             )
             self.metros.append(metro)
             self.all_stations_data_dict.update(metro.real_stations_data_dict)
@@ -256,17 +251,15 @@ class StationBuilder(object):
             raise AssertionError
         positioned_point = position(min(x), min(y))
         station_data = [self.station_data_dict[coord] for coord in adjacent_coord_list]
-        colors, station_names_eng, station_names_chn, label_directions = zip(*station_data)
-        station_name_eng = get_first_item(station_names_eng)
-        station_name_chn = get_first_item(station_names_chn)
-        label_direction = get_first_item(label_directions)
+        colors, sub_colors, station_names_eng, station_names_chn, label_directions = zip(*station_data)
         station = Station(
             positioned_point,
             colors,
+            sub_colors,
             station_direction,
-            station_name_eng,
-            station_name_chn,
-            label_direction
+            get_first_item(station_names_eng),
+            get_first_item(station_names_chn),
+            get_first_item(label_directions)
         )
         self.stations.append(station)
         return self

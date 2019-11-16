@@ -4,7 +4,7 @@ class Color(object):
         self.rgb = rgb
 
     def __eq__(self, obj):
-        return hasattr(obj, "rgb") and self.rgb == obj.rgb
+        return isinstance(obj, Color) and self.rgb == obj.rgb
 
     def get_color_xml_str(self):
         rgb_str = [str(val) for val in self.rgb]

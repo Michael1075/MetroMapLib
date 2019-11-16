@@ -32,7 +32,7 @@ class Project(Canva):
         station_data_dict = metro_builder.all_stations_data_dict
         station_builder = StationBuilder(station_data_dict)
         self.metro_objs = metro_builder.metros
-        self.metro_objs.sort(key = lambda obj: obj.serial_num)
+        self.metro_objs.sort(key = lambda metro: metro.serial_num)
         self.station_objs = station_builder.stations
 
     def def_geographic_map(self):
@@ -41,6 +41,7 @@ class Project(Canva):
 
     def def_web_system(self):
         web_system_group = WebSystem("web_system", self.metro_objs, self.station_objs)
+        self.define(web_system_group.template_group)
         self.define(web_system_group)
 
     def def_web(self):#

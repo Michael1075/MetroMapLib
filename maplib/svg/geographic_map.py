@@ -59,12 +59,12 @@ class HengshaIsland(Island):
 class HuangpuRiver(River):
     def __init__(self):
         control_points = position_list(
-            [0, 100],
-            [18, 100],
-            [58, 60],
-            [162, 60],
-            [162, 75],
-            [173, 86],
+            [0, 95],
+            [18, 95],
+            [58, 55],
+            [162, 55],
+            [162, 70],
+            [173, 81],
             [173, 114],
             [185, 126],
             [185, 141],

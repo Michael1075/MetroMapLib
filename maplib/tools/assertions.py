@@ -2,6 +2,7 @@ import numpy as np
 
 from maplib.constants import NAN
 
+from maplib.tools.numpy_type_tools import np_to_tuple
 from maplib.tools.simple_functions import adjacent_n_tuples
 from maplib.tools.space_ops import get_simplified_angle
 from maplib.tools.space_ops import get_simplified_direction
@@ -10,7 +11,7 @@ from maplib.tools.space_ops import get_simplified_direction
 def assert_true_or_raise(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        assert result is True, func.__name__ + " " + str(result)
+        assert result is True, func.__name__ + " " + str(np_to_tuple(result))
     return wrapper
 
 

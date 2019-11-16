@@ -7,11 +7,12 @@ class Style(object):
     attr_names = (
         "fill",
         "fill-opacity",
+        "mask",
         "stroke",
-        "stroke-width",
-        "stroke-opacity",
         "stroke-linecap",
         "stroke-linejoin",
+        "stroke-opacity",
+        "stroke-width",
     )
 
     def __init__(self, style_dict):
@@ -21,15 +22,17 @@ class Style(object):
         partial_strs = []
         for key, val in self.style_dict.items():
             if key not in self.attr_names:
-                raise NotImplementedError
-            if key in ("fill", "stroke"):
+                raise NotImplementedError(key)
+            elif key == "mask":
+                val_str = "url(#{0})".format(val.id_name)
+            elif key in ("fill", "stroke"):
                 if val is None:
                     val_str = "none"
                 elif isinstance(val, Color):
                     val_str = val.hex_str()
                 else:
                     raise TypeError
-            elif key in ("fill-opacity", "stroke-width", "stroke-opacity"):
+            elif key in ("fill-opacity", "stroke-opacity", "stroke-width"):
                 assert is_number(val)
                 val_str = str(modify_num(val))
             else:

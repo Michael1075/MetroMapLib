@@ -40,3 +40,11 @@ def modify_num(num):
         return round(num)
     return round(num, DECIMAL_DIGITS)
 
+
+def nums_to_string(nums, separator = " "):
+    return separator.join([str(modify_num(val)) for val in nums])
+
+
+def string_to_nums(string, separator = " "):
+    return [eval(val_str) for val_str in string.split(separator)]
+
