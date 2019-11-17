@@ -14,6 +14,7 @@ from maplib.tools.simple_functions import adjacent_n_tuples
 from maplib.tools.simple_functions import get_first_item
 from maplib.tools.simple_functions import shrink_value
 from maplib.tools.simple_functions import string_to_nums
+from maplib.tools.space_ops import center_of_mass
 from maplib.tools.space_ops import midpoint
 from maplib.tools.space_ops import num_to_base_direction
 from maplib.tools.space_ops import rotate
@@ -158,8 +159,6 @@ class Metro(object):
         return control_points
 
     def append_new_point(self, point1, point2, simplified_direction):
-        # Some extra user-defined points and particular arc_radius should also be added,
-        # but not this function itself
         rotated_point1, rotated_point2 = [
             rotate(np_float(point), -simplified_direction * PI / 4)
             for point in [point1, point2]
@@ -181,18 +180,14 @@ class Metro(object):
 
 
 class Station(object):
-    def __init__(self, positioned_point, route_colors, sub_colors, station_direction, station_name_eng, station_name_chn, label_direction):
+    def __init__(self, center_point, route_colors, sub_colors, station_direction, station_name_eng, station_name_chn, label_direction):
         station_size = len(route_colors)
         digest_locals(self)
 
     def add_frame(self, station_frame):
-        self.station_frame = station_frame
-        self.aligned_point = self.get_critical_point(self.label_direction)
+        self.aligned_point = self.center_point + station_frame.get_critical_vector(self.label_direction)
         self.aligned_direction = -self.label_direction
         return self
-
-    def get_critical_point(self, direction):
-        return self.positioned_point + self.station_frame.get_critical_vector(direction)
 
 
 class MetroBuilder(object):
@@ -249,11 +244,11 @@ class StationBuilder(object):
             station_direction = VERTICAL
         else:
             raise AssertionError
-        positioned_point = position(min(x), min(y))
+        center_point = center_of_mass(adjacent_coord_list)
         station_data = [self.station_data_dict[coord] for coord in adjacent_coord_list]
         colors, sub_colors, station_names_eng, station_names_chn, label_directions = zip(*station_data)
         station = Station(
-            positioned_point,
+            center_point,
             colors,
             sub_colors,
             station_direction,

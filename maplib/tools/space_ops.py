@@ -98,8 +98,12 @@ def solve_intersection_point(point1, theta1, point2, theta2):
     return NAN
 
 
+def center_of_mass(points_list):
+    return np.mean(np.array(points_list), axis = 0)
+
+
 def midpoint(a, b):
-    return (a + b) / 2
+    return center_of_mass([a, b])
 
 
 def get_angle(a, b, c):
@@ -108,9 +112,10 @@ def get_angle(a, b, c):
     return arg_principle(arg_end - arg_begin)
 
 
-# In simplified angle units, PI is equivalent to 4
-
 def get_simplified_direction(vector):
+    """
+    In simplified angle units, PI is equivalent to 4
+    """
     if np.allclose(vector, ORIGIN):
         return NAN
     x, y = vector

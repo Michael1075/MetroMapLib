@@ -2,11 +2,13 @@ import re
 import xml.etree.ElementTree as ET
 
 from maplib.parameters import *
+from maplib.constants import *
 
 from maplib.tools.assertions import is_number
 from maplib.tools.simple_functions import modify_num
 from maplib.tools.simple_functions import nums_to_string
 from maplib.tools.simple_functions import string_to_nums
+from maplib.utils.alignable import Alignable
 from maplib.utils.style import Style
 
 
@@ -16,7 +18,7 @@ class ETElement(ET.Element):
 
 
 class Element(ETElement):
-    def __init__(self, id_name = None):
+    def __init__(self, id_name):
         self.init_attr_dict()
         self.init_id(id_name)
         self.init_attrs()
@@ -146,15 +148,10 @@ class Mask(Element):
         return self
 
     def use(self, href_id_name, relative_coord = None):
-        use_obj = Use(href_id_name, relative_coord)
-        self.append(use_obj)
-        return self
+        return Group.use(self, href_id_name, relative_coord)
 
     def use_with_style(self, href_id_name, style_dict, relative_coord = None):
-        use_obj = Use(href_id_name, relative_coord)
-        use_obj.set_style(style_dict)
-        self.append(use_obj)
-        return self
+        return Group.use_with_style(self, href_id_name, style_dict, relative_coord)
 
 
 class Path(Element):
@@ -256,47 +253,6 @@ class Path(Element):
         return self
 
 
-class Circle(Element): 
-    tag_name = "circle"
-    attr_names = ("id", "r", "cx", "cy", "style")
-    allow_append = False
-
-    def set_radius(self, radius):
-        self.set_attr_val("r", radius)
-        return self
-
-    def set_circle_center_coord(self, relative_coord):
-        cx, cy = relative_coord
-        self.set_attr_val("cx", cx)
-        self.set_attr_val("cy", cy)
-        return self
-
-
-class Rectangle(Element):
-    tag_name = "rect"
-    attr_names = ("id", "width", "height", "x", "y", "rx", "ry", "style")
-    allow_append = False
-
-    def set_rect_size(self, rect_size):
-        width, height = rect_size
-        self.set_attr_val("width", width)
-        self.set_attr_val("height", height)
-        return self
-
-    def set_rect_relative_coord(self, relative_coord):
-        x, y = relative_coord
-        self.set_attr_val("x", x)
-        self.set_attr_val("y", y)
-        return self
-
-    def set_corner_radius(self, rx, ry = None):
-        if ry is None:
-            ry = rx
-        self.set_attr_val("rx", rx)
-        self.set_attr_val("ry", ry)
-        return self
-
-
 class Use(Element):
     tag_name = "use"
     attr_names = ("xlink:href", "x", "y", "style")
@@ -317,5 +273,61 @@ class Use(Element):
             x, y = relative_coord
             self.set_attr_val("x", x)
             self.set_attr_val("y", y)
+        return self
+
+
+class Circle(Alignable, Element):
+    tag_name = "circle"
+    attr_names = ("id", "r", "cx", "cy", "style")
+    allow_append = False
+
+    def __init__(self, id_name, radius):
+        Element.__init__(self, id_name)
+        self.set_box_size(2 * radius * RU)
+        self.set_attr_val("r", radius)
+        return self
+
+    def align(self, aligned_point, aligned_direction = ORIGIN):
+        Alignable.align(self, aligned_point, aligned_direction)
+        self.set_circle_center_point(self.center_point)
+        return self
+
+    def set_circle_center_point(self, center_point):
+        cx, cy = center_point
+        self.set_attr_val("cx", cx)
+        self.set_attr_val("cy", cy)
+        return self
+
+
+class Rectangle(Alignable, Element):
+    tag_name = "rect"
+    attr_names = ("id", "width", "height", "x", "y", "rx", "ry", "style")
+    allow_append = False
+
+    def __init__(self, id_name, rect_size):
+        Element.__init__(self, id_name)
+        self.set_box_size(rect_size)
+        width, height = rect_size
+        self.set_attr_val("width", width)
+        self.set_attr_val("height", height)
+        return self
+
+    def align(self, aligned_point, aligned_direction = ORIGIN):
+        self.center_point = aligned_point - aligned_direction * self.semi_box_size
+        relative_coord = self.center_point + LD * self.semi_box_size
+        self.set_rect_relative_coord(relative_coord)
+        return self
+
+    def set_rect_relative_coord(self, relative_coord):
+        x, y = relative_coord
+        self.set_attr_val("x", x)
+        self.set_attr_val("y", y)
+        return self
+
+    def set_corner_radius(self, rx, ry = None):
+        if ry is None:
+            ry = rx
+        self.set_attr_val("rx", rx)
+        self.set_attr_val("ry", ry)
         return self
 

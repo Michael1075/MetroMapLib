@@ -19,9 +19,11 @@ def is_number(data):
     return isinstance(data, (int, float, np.int32, np.int64))
 
 
-# The parameter required_shape should be a tuple which consists positive integers or None.
-# e.g. required_shape = (3, 1, None)
 def is_np_data(data, required_dtype = None, required_shape = None):
+    """
+    The parameter required_shape should be a tuple which consists positive integers or None.
+    e.g. required_shape = (3, 1, None)
+    """
     if not isinstance(data, np.ndarray):
         return False
     if required_dtype is None:

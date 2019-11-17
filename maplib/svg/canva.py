@@ -20,10 +20,10 @@ class Canva(object):
         pass
 
     def init_background(self):
-        self.root = Svg()
-        self.defs = Defs()
+        self.root = Svg(None)
+        self.defs = Defs(None)
         self.root.append(self.defs)
-        self.canva = Group().flip_y()
+        self.canva = Group("canva").flip_y()
         self.root.append(self.canva)
 
     def init_tex_path_id_set(self):

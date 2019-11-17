@@ -6,19 +6,9 @@ from maplib.svg.path_types import OPath
 from maplib.svg.path_types import YPath
 from maplib.svg.svg_element import Circle
 from maplib.svg.svg_element import Group
-from maplib.svg.svg_element import Rectangle
-from maplib.svg.web_system import FrameRectangle
 from maplib.tools.config_ops import digest_locals
 from maplib.tools.space_ops import rotate
 from maplib.tools.space_ops import unify_vector
-
-
-class BackgroundRectangle(FrameRectangle):
-    def __init__(self, id_name):
-        FrameRectangle.__init__(self, id_name)
-        self.set_style({
-            "fill": WATER_AREA_COLOR,
-        })
 
 
 class Land(LPath):
@@ -69,9 +59,8 @@ class Lake(Land):
 
 class RoundLake(Circle):
     def __init__(self, id_name, radius, center_coord):
-        Circle.__init__(self, id_name)
-        self.set_radius(radius)
-        self.set_circle_center_coord(center_coord)
+        Circle.__init__(self, id_name, radius)
+        self.align(center_coord)
 
 
 class Geography(Group):
@@ -82,8 +71,9 @@ class Geography(Group):
         self.add_components()
 
     def background_rect(self):
-        background_rect_obj = BackgroundRectangle("background_rect")
-        self.append(background_rect_obj)
+        self.use_with_style("frame_rect", {
+            "fill": WATER_AREA_COLOR,
+        })
         return self
 
     def init_groups(self):

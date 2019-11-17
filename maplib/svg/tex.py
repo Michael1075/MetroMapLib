@@ -10,6 +10,7 @@ from maplib.tools.config_ops import digest_locals
 from maplib.tools.position import position
 from maplib.tools.tex_file_writing import tex_hash
 from maplib.tools.tex_file_writing import tex_to_svg
+from maplib.utils.alignable import Alignable
 
 
 class PureTex(object):
@@ -24,7 +25,7 @@ class PureTex(object):
         return tex_to_svg(self.new_body, self.file_name_body)
 
 
-class Tex(PureTex):
+class Tex(PureTex, Alignable):
     def __init__(self, string, font_type, added_scale_factor):
         PureTex.__init__(self, string, font_type)
         svg_file = self.tex_to_svg_file()
@@ -58,33 +59,32 @@ class Tex(PureTex):
         scale_factor = TEX_BASE_SCALE_FACTOR * added_scale_factor
         width = self.viewbox_tuple[2] * scale_factor
         height = self.viewbox_tuple[3] * scale_factor
-        box_size = position(width, height)
         digest_locals(self)
+        self.set_box_size(position(width, height))
         return self
 
     def compute_translate_tuple(self, aligned_point, aligned_direction):
-        digest_locals(self)
+        self.align(aligned_point, aligned_direction)
         x_min, y_min = self.viewbox_tuple[:2]
         x_prime, y_prime = self.get_critical_point(LD)
         y_prime = HEIGHT - self.height - y_prime
         return (x_prime / self.scale_factor - x_min, y_prime / self.scale_factor - y_min)
 
-    def get_critical_point(self, direction):
-        center_point = self.aligned_point - self.aligned_direction * self.box_size / 2
-        return center_point + direction * self.box_size / 2
 
-
-class TexBox(object):
+class TexBox(Alignable):
     def __init__(self, tex_objs, aligned_point, aligned_direction, line_buff):
         assert all([isinstance(tex_obj, Tex) for tex_obj in tex_objs])
-        total_height = sum([tex_obj.height for tex_obj in tex_objs]) + (len(tex_objs) - 1) * line_buff
-        top_aligned_point = aligned_point + (1 - aligned_direction[1]) * total_height * UP / 2
-        partial_aligned_points = [
+        self.tex_objs = tex_objs
+        width = max([tex_obj.width for tex_obj in tex_objs])
+        height = sum([tex_obj.height for tex_obj in tex_objs]) + (len(tex_objs) - 1) * line_buff
+        self.set_box_size(position(width, height))
+        self.align(aligned_point, aligned_direction)
+        self.partial_aligned_direction = aligned_direction * RIGHT + UP
+        top_aligned_point = self.get_critical_point(self.partial_aligned_direction)
+        self.partial_aligned_points = [
             (top_aligned_point + (sum([tex_obj.height for tex_obj in tex_objs[:k]]) + k * line_buff) * DOWN)
             for k in range(len(tex_objs))
         ]
-        partial_aligned_direction = aligned_direction * RIGHT + UP
-        digest_locals(self, ("tex_objs", "partial_aligned_points", "partial_aligned_direction"))
 
 
 class TexGroup(Group):
@@ -106,15 +106,15 @@ class TexGroup(Group):
                 path_obj.finish_path()
                 self.tex_paths_dict[new_path_id] = path_obj
         translate_tuple = tex_obj.compute_translate_tuple(aligned_point, aligned_direction)
-        tex_partial = Group().translate(translate_tuple)
+        tex_partial_group = Group(None).translate(translate_tuple)
         for path_id, relative_coord in tex_obj.tex_uses_list:
-            tex_partial.use(path_id_rename_dict[path_id], relative_coord)
-        return tex_partial
+            tex_partial_group.use(path_id_rename_dict[path_id], relative_coord)
+        return tex_partial_group
 
     def append_tex_box(self, tex_box):
         assert len(self.group_objs) == len(tex_box.tex_objs)
         for group_obj, tex_obj, partial_aligned_point in zip(self.group_objs, tex_box.tex_objs, tex_box.partial_aligned_points):
-            tex_partial = self.construct_tex_partial_group(tex_obj, partial_aligned_point, tex_box.partial_aligned_direction)
-            group_obj.append(tex_partial)
+            tex_partial_group = self.construct_tex_partial_group(tex_obj, partial_aligned_point, tex_box.partial_aligned_direction)
+            group_obj.append(tex_partial_group)
         return self
     

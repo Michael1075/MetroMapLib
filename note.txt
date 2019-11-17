@@ -12,10 +12,9 @@ Run SVG online: https://www.runoob.com/try/try.php?filename=trysvg_path
 2019/10/25
 TODO
 serial num, district name, water area name
-Maglev Line, Jinshan Railway
 
 2019/11/2
-python multiprocessing > normal > threadings (GIL)
+About multiprocessing, threading
 https://blog.csdn.net/To_be_to_thought/article/details/93662320
 
 Reference: https://blog.csdn.net/qq_41569946/article/details/88369047
@@ -54,5 +53,6 @@ git pull origin master
 git push -h
 
 2019/11/10
-TODO
-Jiamin Line, Airport Line
+
+2019/11/16
+

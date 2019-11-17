@@ -6,6 +6,7 @@ from maplib.svg.geographic_map import GeograpicMap
 from maplib.svg.svg_element import Group#
 from maplib.svg.svg_element import Path#
 from maplib.svg.tex_instance import StationName
+from maplib.svg.misc import FrameRectangle
 from maplib.svg.web_system import WebSystem
 from maplib.tools.position import position#
 from maplib.tools.svg_file_tools import svg_to_pdf
@@ -21,6 +22,7 @@ class Project(Canva):
 
     def construct(self):
         self.load_data()
+        self.def_frame_rect()
         self.def_geographic_map()
         self.def_web()#
         self.def_web_system()
@@ -35,15 +37,14 @@ class Project(Canva):
         self.metro_objs.sort(key = lambda metro: metro.serial_num)
         self.station_objs = station_builder.stations
 
+    def def_frame_rect(self):
+        frame_rect = FrameRectangle("frame_rect")
+        self.define(frame_rect)
+
     def def_geographic_map(self):
         geographic_map_group = GeograpicMap("geographic_map")
         self.define(geographic_map_group)
-
-    def def_web_system(self):
-        web_system_group = WebSystem("web_system", self.metro_objs, self.station_objs)
-        self.define(web_system_group.template_group)
-        self.define(web_system_group)
-
+    
     def def_web(self):#
         hpath = Path("h")
         hpath.move_to(position(0, 0)).h_line_to(WIDTH).finish_path()
@@ -62,6 +63,11 @@ class Project(Canva):
             group1.use("v", position(i, 0))
         for i in range(50, 300, 50):
             group1.use("h", position(0, i))
+
+    def def_web_system(self):
+        web_system_group = WebSystem("web_system", self.metro_objs, self.station_objs)
+        self.define(web_system_group.template_group)
+        self.define(web_system_group)
 
     def def_station_name(self):
         station_name_group = StationName("station_name", self.station_objs)

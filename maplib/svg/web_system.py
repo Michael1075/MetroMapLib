@@ -14,15 +14,6 @@ from maplib.tools.position import position
 from maplib.tools.space_ops import get_positive_direction
 
 
-class FrameRectangle(Rectangle):
-    def __init__(self, id_name):
-        Rectangle.__init__(self, id_name)
-        self.set_rect_size(SIZE)
-        self.set_style({
-            "stroke-width": 0,
-        })
-
-
 class Route(LineArcPath):
     def __init__(self, id_name, metro):
         arc_radius = ROUTE_ARC_RADIUS
@@ -39,15 +30,10 @@ class Route(LineArcPath):
 class NormalStationFrame(Circle):
     def __init__(self, id_name, color):
         radius = FRAME_RADIUS_DICT["normal"]
-        digest_locals(self)
-        Circle.__init__(self, id_name)
-        self.set_radius(radius)
+        Circle.__init__(self, id_name, radius)
         self.set_style({
             "stroke": color,
         })
-
-    def get_critical_vector(self, direction):
-        return RU * self.radius * direction
 
 
 class InterchangeStationFrame(Rectangle):
@@ -58,24 +44,16 @@ class InterchangeStationFrame(Rectangle):
         y = 2 * radius
         if station_direction == VERTICAL:
             x, y = y, x
-        self.station_rect_size = position(x, y)
         relative_coord = LD * radius
-        Rectangle.__init__(self, id_name)
-        self.set_rect_size(self.station_rect_size)
-        self.set_rect_relative_coord(relative_coord)
+        Rectangle.__init__(self, id_name, position(x, y))
+        self.align_at_origin()
         self.set_corner_radius(radius)
-
-    def get_critical_vector(self, direction):
-        positive_direction = get_positive_direction(self.station_direction)
-        positioned_point_to_center = (self.station_size - 1) * positive_direction / 2
-        return positioned_point_to_center + self.station_rect_size / 2 * direction
 
 
 class StationPoint(Circle):
     def __init__(self, id_name, color):
         point_radius = STATION_POINT_RADIUS
-        Circle.__init__(self, id_name)
-        self.set_radius(point_radius)
+        Circle.__init__(self, id_name, point_radius)
         self.set_style({
             "fill": color,
         })
@@ -88,7 +66,7 @@ class WebSystem(Group):
         self.init_template_group()
         self.init_dicts()
         self.classify_stations()
-        self.def_frame_rect()
+        self.def_mask_rect()
         self.add_route()
         self.add_normal_station_frame()
         self.add_interchange_station_frame()
@@ -119,12 +97,12 @@ class WebSystem(Group):
                 self.interchange_stations.append(station)
         return self
 
-    def def_frame_rect(self):
-        frame_rect_obj = FrameRectangle("frame_rect")
-        frame_rect_obj.set_style({
+    def def_mask_rect(self):
+        mask_rect_group = Group("mask_rect")
+        mask_rect_group.use_with_style("frame_rect", {
             "fill": WHITE,
         })
-        self.template_group.append(frame_rect_obj)
+        self.template_group.append(mask_rect_group)
 
     def add_route(self):
         route_mask_group = Group("route_mask")
@@ -140,7 +118,7 @@ class WebSystem(Group):
             if metro.sub_color is not None:
                 mask_id_name = "m" + str(metro.serial_num)
                 mask = Mask(mask_id_name)
-                mask.use("frame_rect")
+                mask.use("mask_rect")
                 mask.use(route_path_id_name)
                 self.id_to_mask_dict[route_path_id_name] = mask
                 route_mask_group.append(mask)
@@ -153,25 +131,32 @@ class WebSystem(Group):
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
         })
+        main_route_group = Group("main_route")
+        main_route_group.set_style({
+            "stroke-width": ROUTE_STROKE_WIDTH,
+        })
+        sub_route_group = Group("sub_route")
+        sub_route_group.set_style({
+            "stroke-width": ROUTE_MINOR_STROKE_WIDTH,
+        })
         for metro in self.metro_objs[::-1]:
             route_path_id_name = "r" + str(metro.serial_num)
             if metro.sub_color is None:
-                route_group.use_with_style(route_path_id_name, {
-                    "stroke-width": ROUTE_STROKE_WIDTH,
+                main_route_group.use_with_style(route_path_id_name, {
                     "stroke": metro.main_color,
                 })
             else:
                 mask = self.id_to_mask_dict[route_path_id_name]
-                route_group.use_with_style(route_path_id_name, {
-                    "stroke-width": ROUTE_STROKE_WIDTH,
+                main_route_group.use_with_style(route_path_id_name, {
                     "stroke": metro.main_color,
                     "mask": mask,
                 })
                 if metro.sub_color != "None":
-                    route_group.use_with_style(route_path_id_name, {
-                        "stroke-width": ROUTE_MINOR_STROKE_WIDTH,
+                    sub_route_group.use_with_style(route_path_id_name, {
                         "stroke": metro.sub_color,
                     })
+        route_group.append(main_route_group)
+        route_group.append(sub_route_group)
         self.append(route_group)
         return self
 
@@ -191,7 +176,7 @@ class WebSystem(Group):
             serial_num = self.color_to_serial_num_dict[color.hex_str()]
             station_id_name = "n" + str(serial_num)
             station.add_frame(self.id_to_frame_dict[station_id_name])
-            normal_station_frame_group.use(station_id_name, station.positioned_point)
+            normal_station_frame_group.use(station_id_name, station.center_point)
         self.append(normal_station_frame_group)
         return self
 
@@ -213,7 +198,7 @@ class WebSystem(Group):
         for station in self.interchange_stations:
             station_id_name = station.station_direction + str(station.station_size)
             station.add_frame(self.id_to_frame_dict[station_id_name])
-            interchange_station_frame_group.use(station_id_name, station.positioned_point)
+            interchange_station_frame_group.use(station_id_name, station.center_point)
         self.append(interchange_station_frame_group)
         return self
 
@@ -239,11 +224,12 @@ class WebSystem(Group):
             "fill-opacity": STATION_POINT_FILL_OPACITY,
         })
         for station in self.interchange_stations:
+            positive_direction = get_positive_direction(station.station_direction)
+            positioned_point = station.center_point - (station.station_size - 1) * positive_direction / 2
             for k, color in enumerate(station.route_colors):
                 serial_num = self.color_to_serial_num_dict[color.hex_str()]
-                positive_direction = get_positive_direction(station.station_direction)
-                positioned_point = station.positioned_point + k * positive_direction
-                station_point_group.use("p" + str(serial_num), positioned_point)
+                point = positioned_point + k * positive_direction
+                station_point_group.use("p" + str(serial_num), point)
         self.append(station_point_group)
         return self
 
