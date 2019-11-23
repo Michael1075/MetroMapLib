@@ -112,10 +112,18 @@ def get_angle(a, b, c):
     return arg_principle(arg_end - arg_begin)
 
 
-def get_simplified_direction(vector):
+def simplify_angle(angle):
     """
     In simplified angle units, PI is equivalent to 4
     """
+    return angle * 4 / PI
+
+
+def restore_angle(simplified_angle):
+    return simplified_angle * PI / 4
+
+
+def get_simplified_direction(vector):
     if np.allclose(vector, ORIGIN):
         return NAN
     x, y = vector

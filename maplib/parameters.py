@@ -39,7 +39,7 @@ HEIGHT = 300.0
 SIZE = position(WIDTH, HEIGHT)
 
 # tex
-TEX_FONT_CMDS_CHN = ("heiti", "youyuan")
+TEX_FONT_CMDS_CHN = ("songti", "heiti", "lishu", "youyuan")
 TEX_FONT_CMDS_ENG = ("rmfamily", "sffamily")
 TEX_FONT_CMDS = TEX_FONT_CMDS_CHN + TEX_FONT_CMDS_ENG
 TEX_BASE_SCALE_FACTOR = 0.07
@@ -47,10 +47,16 @@ PRINT_TEX_WRITING_PROGRESS = True
 
 # geography
 COASTLINE_ARC_RADIUS = 6.0
-RIVER_ARC_RADIUS_DICT = {"Huangpu_River": 6.0, "Suzhou_Creek": 2.4}
-RIVER_WIDTH_DICT = {"Huangpu_River": 5.0, "Suzhou_Creek": 2.0}
+RIVER_ARC_RADIUS_DICT = {
+    "Huangpu_River": 6.0,
+    "Suzhou_Creek": 2.4,
+}
+RIVER_WIDTH_DICT = {
+    "Huangpu_River": 5.0,
+    "Suzhou_Creek": 2.0,
+}
 LAND_COLOR = WHITE
-WATER_AREA_COLOR = Color(199, 233, 241)
+WATER_AREA_COLOR = Color(217, 235, 247)
 
 # route and station
 ROUTE_ARC_RADIUS = 2.0
@@ -59,23 +65,68 @@ ROUTE_MINOR_STROKE_WIDTH = 0.3
 ROUTE_STROKE_OPACITY = 0.7
 STATION_POINT_RADIUS = 0.4
 STATION_POINT_FILL_OPACITY = 1.0
-FRAME_RADIUS_DICT = {"normal": 0.4, "interchange": 0.55}
-FRAME_STROKE_WIDTH_DICT = {"normal": 0.2, "interchange": 0.1}
+FRAME_RADIUS_DICT = {
+    "normal": 0.4,
+    "interchange": 0.55
+}
+FRAME_STROKE_WIDTH_DICT = {
+    "normal": 0.2,
+    "interchange": 0.1
+}
 FRAME_STROKE_OPACITY = 0.9
 FRAME_FILL_COLOR = WHITE
 INTERCHANGE_STATION_FRAME_STROKE_COLOR = BLACK
 
-# label
-LABEL_BUFF_SMALL = 0.1
-LABEL_BUFF_BIG = 0.3
-LABEL_BUFF_BETWEEN_LINES = -0.2
-LABEL_TEX_CHN_SCALE_FACTOR = 1.4
-LABEL_TEX_ENG_SCALE_FACTOR = 1.0
-LABEL_TEX_CHN_FONT_CMD = "youyuan"
-LABEL_TEX_ENG_FONT_CMD = "sffamily"
-LABEL_CHN_COLOR = BLACK
-LABEL_ENG_COLOR = Color(140, 140, 140)
-LABEL_SHADOW_COLOR = WHITE
-LABEL_SHADOW_STROKE_WIDTH = 0.07
-LABEL_SHADOW_OPACITY = 0.7
+# tex style
+STATION_NAME_TEX_STYLE = {
+    "small_buff": 0.1,
+    "big_buff": 0.3,
+    "buff_between_lines": -0.2,
+    "scale_factor": {
+        "chn": 1.4,
+        "eng": 1.0,
+    },
+    "font_cmd": {
+        "chn": "youyuan",
+        "eng": "sffamily",
+    },
+    "color": {
+        "chn": BLACK,
+        "eng": Color(140, 140, 140),
+    },
+    "shadow": {
+        "color": WHITE,
+        "stroke_width": 0.07,
+        "opacity": 0.7,
+    },
+}
+DISTRICT_NAME_TEX_STYLE = {
+    "buff_between_lines": -0.2,
+    "scale_factor": {
+        "chn": 2.5,
+        "eng": 1.4,
+    },
+    "font_cmd": {
+        "chn": "songti",
+        "eng": "rmfamily",
+    },
+    "color": Color(120, 120, 120),
+}
+WATER_AREA_NAME_TEX_STYLE = {
+    "buff_between_lines": -0.2,
+    "scale_factor": {
+        "chn": 2.0,
+        "eng": 1.2,
+    },
+    "font_cmd": {
+        "chn": "songti",
+        "eng": "rmfamily",
+    },
+    "color": Color(93, 188, 218),
+}
+
+# metro logo
+METRO_LOGO_COLOR = Color(215, 5, 8)
+METRO_LOGO_SIZE = 15.0
+METRO_LOGO_ALIGNED_POINT = position(20.0, 280.0)
 

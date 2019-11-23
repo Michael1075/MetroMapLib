@@ -7,17 +7,18 @@ MetroMapLib runs on python 3.6. System requirements are just LaTeX. Other packag
 
 ```sh
 # Default packages required
-copy, hashlib, inspect, multiprocessing, os, re, treading, time, xml
+concurrent, copy, hashlib, inspect, os, re, time, xml
 # Install python requirements
 python -m pip install -r requirements.txt
+# Run the following in case that the network is poor
+python -m pip --default-timeout=1000 install -U -r requirements.txt
 ```
 
 
 ## Using MetroMapLib
 
 Run `python main.py` under the root file.
-Note, it takes about 7 sec to write a tex file to an svg file, so if some tex are added, please wait patiently. There're 492 stations altogeter(up to now), so if the tex commands of the labels are changed, every 492 files take about 3500 sec.
-However, if all tex are settled, the main process only takes about 10 sec.
+Note, new tex files requires your GPU to run close to its full capacity by multithreading. However, if all tex are settled, the main process does not take long.
 
 
 ## View SVG

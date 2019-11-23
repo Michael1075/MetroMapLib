@@ -11,7 +11,7 @@ Run SVG online: https://www.runoob.com/try/try.php?filename=trysvg_path
 
 2019/10/25
 TODO
-serial num, district name, water area name
+serial num
 
 2019/11/2
 About multiprocessing, threading
@@ -55,4 +55,6 @@ git push -h
 2019/11/10
 
 2019/11/16
+
+2019/11/22
 

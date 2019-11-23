@@ -1,41 +1,41 @@
-from maplib.constants import *#
-from maplib.parameters import *#
-
-from maplib.svg.canva import Canva
+from maplib.svg.canvas import Canvas
 from maplib.svg.geographic_map import GeograpicMap
 from maplib.svg.svg_element import Group#
 from maplib.svg.svg_element import Path#
+from maplib.svg.tex_instance import DistrictName
 from maplib.svg.tex_instance import StationName
+from maplib.svg.tex_instance import WaterAreaName
 from maplib.svg.misc import FrameRectangle
+from maplib.svg.misc import ShanghaiMetroLogo
 from maplib.svg.web_system import WebSystem
 from maplib.tools.position import position#
-from maplib.tools.svg_file_tools import svg_to_pdf
 from maplib.utils.color import Color#
-from maplib.utils.constructor import MetroBuilder
-from maplib.utils.constructor import StationBuilder
+from maplib.utils.constructor import Constructor
 
 
-class Project(Canva):
+class Project(Canvas):
     def __init__(self, input_file, output_file):
         self.input_file = input_file
-        Canva.__init__(self, output_file)
+        Canvas.__init__(self, output_file)
 
     def construct(self):
         self.load_data()
         self.def_frame_rect()
         self.def_geographic_map()
-        self.def_web()#
+        #self.def_web()#
         self.def_web_system()
         self.def_station_name()
+        self.def_district_name()
+        self.def_water_area_name()
+        self.def_metro_logo()
         self.draw_components()
 
     def load_data(self):
-        metro_builder = MetroBuilder(self.input_file)
-        station_data_dict = metro_builder.all_stations_data_dict
-        station_builder = StationBuilder(station_data_dict)
-        self.metro_objs = metro_builder.metros
-        self.metro_objs.sort(key = lambda metro: metro.serial_num)
-        self.station_objs = station_builder.stations
+        constructor = Constructor(self.input_file)
+        self.metro_objs = constructor.metros
+        self.station_objs = constructor.stations
+        self.district_name_objs = constructor.district_names
+        self.water_area_name_objs = constructor.water_area_names
 
     def def_frame_rect(self):
         frame_rect = FrameRectangle("frame_rect")
@@ -47,9 +47,9 @@ class Project(Canva):
     
     def def_web(self):#
         hpath = Path("h")
-        hpath.move_to(position(0, 0)).h_line_to(WIDTH).finish_path()
+        hpath.move_to(position(0, 0)).h_line_to(400).finish_path()
         vpath = Path("v")
-        vpath.move_to(position(0, 0)).v_line_to(HEIGHT).finish_path()
+        vpath.move_to(position(0, 0)).v_line_to(300).finish_path()
         group1 = Group("group1").set_style({
             "stroke": Color(180, 180, 180),
             "stroke-opacity": 0.6,
@@ -73,21 +73,24 @@ class Project(Canva):
         station_name_group = StationName("station_name", self.station_objs)
         self.define_tex(station_name_group)
 
+    def def_district_name(self):
+        district_name_group = DistrictName("district_name", self.district_name_objs)
+        self.define_tex(district_name_group)
+
+    def def_water_area_name(self):
+        water_area_name_group = WaterAreaName("water_area_name", self.water_area_name_objs)
+        self.define_tex(water_area_name_group)
+
+    def def_metro_logo(self):
+        metro_logo = ShanghaiMetroLogo("Shanghai_metro_logo")
+        self.define(metro_logo)
+
     def draw_components(self):
         self.draw("geographic_map")
         self.draw("group1")#
         self.draw("web_system")
         self.draw("station_name")
-
-
-class Main(Project):
-    def __init__(self, input_file, output_file):
-        if output_file.endswith(".svg"):
-            Project(input_file, output_file)
-        elif output_file.endswith(".pdf"):
-            svg_output_file = output_file.replace(".pdf", ".svg")
-            Project(input_file, svg_output_file)
-            svg_to_pdf(svg_output_file, output_file)
-        else:
-            raise OSError
+        self.draw("district_name")
+        self.draw("water_area_name")
+        self.draw("Shanghai_metro_logo")
 

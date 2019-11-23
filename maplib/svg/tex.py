@@ -19,7 +19,7 @@ class PureTex(object):
         tex_string = "{{\\{0} {1}}}".format(font_type, string)
         new_body = TEMPLATE_TEX_FILE_BODY.replace(TEX_TO_REPLACE, tex_string)
         file_name_body = os.path.join(TEX_DIR, font_type, tex_hash(new_body))
-        digest_locals(self, ("font_type", "new_body", "file_name_body"))
+        digest_locals(self)
 
     def tex_to_svg_file(self):
         return tex_to_svg(self.new_body, self.file_name_body)
@@ -112,7 +112,6 @@ class TexGroup(Group):
         return tex_partial_group
 
     def append_tex_box(self, tex_box):
-        assert len(self.group_objs) == len(tex_box.tex_objs)
         for group_obj, tex_obj, partial_aligned_point in zip(self.group_objs, tex_box.tex_objs, tex_box.partial_aligned_points):
             tex_partial_group = self.construct_tex_partial_group(tex_obj, partial_aligned_point, tex_box.partial_aligned_direction)
             group_obj.append(tex_partial_group)

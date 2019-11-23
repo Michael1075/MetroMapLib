@@ -1,3 +1,6 @@
+import concurrent.futures as ft
+
+from maplib.constants import ORIGIN
 from maplib.parameters import *
 
 from maplib.svg.svg_element import Group
@@ -7,68 +10,115 @@ from maplib.svg.tex import TexGroup
 from maplib.tools.space_ops import get_simplified_direction
 
 
-class StationNameBody(TexGroup):
-    def __init__(self, id_name, station_objs):
-        self.station_objs = station_objs
-        partial_groups = self.get_partial_groups()
-        TexGroup.__init__(self, id_name, partial_groups)
-        self.add_station_name()
-
-    def get_partial_groups(self):
-        chn_group = Group("station_name_chn")
-        chn_group.scale(LABEL_TEX_CHN_SCALE_FACTOR)
-        chn_group.set_style({
-            "fill": LABEL_CHN_COLOR,
-        })
-        eng_group = Group("station_name_eng")
-        eng_group.scale(LABEL_TEX_ENG_SCALE_FACTOR)
-        eng_group.set_style({
-            "fill": LABEL_ENG_COLOR,
-        })
-        return (chn_group, eng_group)
-
-    def build_tex_objs(self, station):
-        # This process writes tex_file and really takes long
-        tex_chn_obj = Tex(station.station_name_chn, LABEL_TEX_CHN_FONT_CMD, LABEL_TEX_CHN_SCALE_FACTOR)
-        tex_eng_obj = Tex(station.station_name_eng, LABEL_TEX_ENG_FONT_CMD, LABEL_TEX_ENG_SCALE_FACTOR)
-        return (tex_chn_obj, tex_eng_obj)
-
-    def add_station_name(self):
-        tex_objs_list = [self.build_tex_objs(station) for station in self.station_objs]
-        align_buffs = (LABEL_BUFF_BIG, LABEL_BUFF_SMALL)
-        line_buff = LABEL_BUFF_BETWEEN_LINES
-        for station, tex_objs in zip(self.station_objs, tex_objs_list):
-            aligned_direction = station.aligned_direction
-            align_buff = align_buffs[get_simplified_direction(aligned_direction) % 2]
-            aligned_point = station.aligned_point - aligned_direction * align_buff
-            tex_box = TexBox(tex_objs, aligned_point, aligned_direction, line_buff)
-            self.append_tex_box(tex_box)
-        return self
-
-
-class StationName(Group):
-    def __init__(self, id_name, station_objs):
-        self.station_objs = station_objs
+class TexNameTemplate(Group):
+    def __init__(self, id_name, objs):
         Group.__init__(self, id_name)
         self.flip_y_for_tex()
-        self.add_shadow_tex()
+        self.objs = objs
+        if "shadow" in self.tex_style.keys():
+            self.add_shadow_tex()
         self.add_body_tex()
 
+    def get_partial_groups(self):
+        chn_group = Group(None)
+        eng_group = Group(None)
+        scale_factor = self.tex_style["scale_factor"]
+        color = self.tex_style["color"]
+        if isinstance(scale_factor, dict):
+            chn_group.scale(scale_factor["chn"])
+            eng_group.scale(scale_factor["eng"])
+        if isinstance(color, dict):
+            chn_group.set_style({
+                "fill": color["chn"],
+            })
+            eng_group.set_style({
+                "fill": color["eng"],
+            })
+        return (chn_group, eng_group)
+
+    def get_tex_group(self):
+        partial_groups = self.get_partial_groups()
+        tex_group = TexGroup(self.body_group_id_name, partial_groups)
+        scale_factor = self.tex_style["scale_factor"]
+        color = self.tex_style["color"]
+        if not isinstance(scale_factor, dict):
+            tex_group.scale(scale_factor)
+        if not isinstance(color, dict):
+            tex_group.set_style({
+                "fill": color,
+            })
+        return tex_group
+
+    def build_tex_objs(self, obj):
+        tex_strs = self.get_tex_strs(obj)
+        return tuple([
+            Tex(tex_strs[language], self.tex_style["font_cmd"][language], self.tex_style["scale_factor"][language])
+            for language in ("chn", "eng")
+            if tex_strs[language]
+        ])
+
+    def get_tex_strs(self, obj):
+        return {
+            "chn": obj.name_chn,
+            "eng": obj.name_eng,
+        }
+
+    def add_body_tex(self):
+        tex_group = self.get_tex_group()
+        with ft.ThreadPoolExecutor() as executor:
+            tex_objs_list = list(executor.map(self.build_tex_objs, self.objs))
+        line_buff = self.tex_style["buff_between_lines"]
+        for obj, tex_objs in zip(self.objs, tex_objs_list):
+            aligned_point, aligned_direction = self.get_aligning_information(obj)
+            tex_box = TexBox(tex_objs, aligned_point, aligned_direction, line_buff)
+            tex_group.append_tex_box(tex_box)
+        self.append(tex_group)
+        self.tex_paths_dict = tex_group.tex_paths_dict
+        return self
+
     def add_shadow_tex(self):
-        shadow_group = Group("station_name_shadow")
+        shadow_style = self.tex_style["shadow"]
+        shadow_group = Group(None)
         shadow_group.set_style({
             "fill": None,
-            "stroke": LABEL_SHADOW_COLOR,
-            "stroke-width": LABEL_SHADOW_STROKE_WIDTH * 2 / TEX_BASE_SCALE_FACTOR,
-            "stroke-opacity": LABEL_SHADOW_OPACITY,
+            "stroke": shadow_style["color"],
+            "stroke-width": shadow_style["stroke_width"] * 2 / TEX_BASE_SCALE_FACTOR,
+            "stroke-opacity": shadow_style["opacity"],
         })
-        shadow_group.use("station_name_body")
+        shadow_group.use(self.body_group_id_name)
         self.append(shadow_group)
         return self
 
-    def add_body_tex(self):
-        station_name_body = StationNameBody("station_name_body", self.station_objs)
-        self.append(station_name_body)
-        self.tex_paths_dict = station_name_body.tex_paths_dict
-        return self
+
+class StationName(TexNameTemplate):
+    tex_style = STATION_NAME_TEX_STYLE
+    body_group_id_name = "station_name_body"
+
+    def get_aligning_information(self, station):
+        align_buffs = [self.tex_style[key] for key in ("big_buff", "small_buff")]
+        label_direction = station.label_direction
+        aligned_direction = -label_direction
+        align_buff = align_buffs[get_simplified_direction(label_direction) % 2]
+        aligned_point = station.frame.get_critical_point(label_direction) + align_buff * label_direction
+        return (aligned_point, aligned_direction)
+
+
+class DistrictName(TexNameTemplate):
+    tex_style = DISTRICT_NAME_TEX_STYLE
+    body_group_id_name = "district_name_body"
+
+    def get_aligning_information(self, district_name):
+        aligned_point = district_name.center_point
+        aligned_direction = ORIGIN
+        return (aligned_point, aligned_direction)
+
+
+class WaterAreaName(TexNameTemplate):
+    tex_style = WATER_AREA_NAME_TEX_STYLE
+    body_group_id_name = "water_area_name_body"
+
+    def get_aligning_information(self, water_area_name):
+        aligned_point = water_area_name.center_point
+        aligned_direction = ORIGIN
+        return (aligned_point, aligned_direction)
 

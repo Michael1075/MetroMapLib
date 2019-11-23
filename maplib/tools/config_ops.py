@@ -10,9 +10,7 @@ def filtered_locals(caller_locals):
 
 
 def digest_locals(obj, keys = None):
-    caller_locals = filtered_locals(
-        inspect.currentframe().f_back.f_locals
-    )
+    caller_locals = filtered_locals(inspect.currentframe().f_back.f_locals)
     if keys is None:
         keys = list(caller_locals.keys())
     for key in keys:

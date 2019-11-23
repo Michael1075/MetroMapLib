@@ -1,6 +1,10 @@
 import openpyxl
 
 
+def open_xlsx_file(file_name):
+    return openpyxl.load_workbook(filename = file_name)
+
+
 def get_table_val(table, min_row = None, max_row = None, min_column = None, max_column = None):
     assert isinstance(table, openpyxl.worksheet.worksheet.Worksheet)
     if min_row is None:

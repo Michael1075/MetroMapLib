@@ -123,8 +123,8 @@ class Group(Element):
         self.set_transform("translate", translate_tuple)
         return self
 
-    def scale(self, scale_val):
-        matrix_tuple = (scale_val, 0, 0, scale_val, 0, 0)
+    def scale(self, scale_val, shift_vector = ORIGIN):
+        matrix_tuple = (scale_val, 0, 0, scale_val, *shift_vector)
         self.matrix(matrix_tuple)
         return self
 
@@ -289,7 +289,7 @@ class Circle(Alignable, Element):
 
     def align(self, aligned_point, aligned_direction = ORIGIN):
         Alignable.align(self, aligned_point, aligned_direction)
-        self.set_circle_center_point(self.center_point)
+        self.set_circle_center_point(self.get_critical_point(ORIGIN))
         return self
 
     def set_circle_center_point(self, center_point):
@@ -313,9 +313,8 @@ class Rectangle(Alignable, Element):
         return self
 
     def align(self, aligned_point, aligned_direction = ORIGIN):
-        self.center_point = aligned_point - aligned_direction * self.semi_box_size
-        relative_coord = self.center_point + LD * self.semi_box_size
-        self.set_rect_relative_coord(relative_coord)
+        Alignable.align(self, aligned_point, aligned_direction)
+        self.set_rect_relative_coord(self.get_critical_point(LD))
         return self
 
     def set_rect_relative_coord(self, relative_coord):

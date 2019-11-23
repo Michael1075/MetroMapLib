@@ -1,6 +1,7 @@
 from maplib.constants import *
 from maplib.parameters import *
 
+from maplib.svg.misc import BackgroundFrame
 from maplib.svg.path_types import LPath
 from maplib.svg.path_types import OPath
 from maplib.svg.path_types import YPath
@@ -16,8 +17,9 @@ class Land(LPath):
         arc_radius = COASTLINE_ARC_RADIUS
         LPath.__init__(self, id_name, control_points, arc_radius)
         if add_corners is not None:
+            background_frame = BackgroundFrame()
             for corner in add_corners:
-                corner_coord = (corner + RU) * SIZE / 2
+                corner_coord = background_frame.get_critical_point(corner)
                 self.line_to(corner_coord)
         self.close_path()
         self.finish_path()

@@ -25,7 +25,7 @@ class LineArcPath(Path):
         sweep_flags = []
         for a, b, c in adjacent_n_tuples(self.control_points, 3, self.loop):
             theta = get_angle(a, b, c)
-            sweep_flag = 0 if theta >= 0.0 else 1
+            sweep_flag = 0 if theta >= 0 else 1
             cut_off_length = self.arc_radius / np.tan(abs(theta) / 2)
             h1, h2 = [
                 (b + abs_arg_pair(cut_off_length, arg(p - b)))

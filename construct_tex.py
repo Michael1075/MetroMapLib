@@ -23,5 +23,7 @@ if __name__ == "__main__":
     #add_eng_tex("Pudong Airport Terminal 3")
     #remove_eng_tex("Holiday Resort")
     #add_eng_tex("Dujiaqu")
-    add_eng_tex("Zhangjiang")
+    #add_eng_tex("Zhangjiang")
+    remove_eng_tex("Huangpu River 黄浦江")
+    remove_eng_tex("Suzhou Creek 苏州河")
 

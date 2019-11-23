@@ -2,11 +2,11 @@ from maplib.parameters import DECIMAL_DIGITS
 from maplib.parameters import TOLERANCE
 
 
-def get_first_item(items):
-    assert bool(items)
-    for item in items:
-        if item is not None:
-            return item
+def get_first_item(vals):
+    result_list = [val for val in vals if val is not None]
+    result_set = set(result_list)
+    assert len(result_set) == 1, ValueError(result_set)
+    return result_list[0]
 
 
 def shrink_value(value, val1, val2):
