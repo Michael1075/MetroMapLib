@@ -1,0 +1,5 @@
+*.pyc
+*.bat
+
+note.txt
+construct_tex.py
