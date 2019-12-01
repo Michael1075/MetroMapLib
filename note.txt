@@ -52,6 +52,8 @@ git pull --rebase origin master
 git --help
 git pull origin master
 git push -h
+git config --global user.name Michael1075
+git config --global user.email xxx@xxx.com
 
 2019/11/10
 
