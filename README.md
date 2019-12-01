@@ -1,3 +1,5 @@
+# MetroMapLib
+
 MetroMapLib is a tool to config a metro map in format SVG.
 
 
@@ -7,9 +9,21 @@ MetroMapLib runs on python 3.6. System requirements are just LaTeX. Other packag
 
 ```sh
 # Default packages required
-concurrent, copy, hashlib, inspect, os, re, time, xml
+concurrent
+copy
+functools
+hashlib
+inspect
+json
+operator
+os
+re
+time
+xml
+
 # Install python requirements
 python -m pip install -r requirements.txt
+
 # Run the following in case that the network is poor
 python -m pip --default-timeout=1000 install -U -r requirements.txt
 ```
@@ -24,3 +38,4 @@ Note, new tex files requires your GPU to run close to its full capacity by multi
 ## View SVG
 
 SVG is a short for Scalable Vector Graphics, which can be viewed simply in a chrome. Google Chrome is recommended.
+

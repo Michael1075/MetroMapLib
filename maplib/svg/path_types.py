@@ -9,6 +9,13 @@ from maplib.tools.space_ops import arg
 from maplib.tools.space_ops import get_angle
 
 
+class CommandPath(Path):
+    def __init__(self, id_name, command_str):
+        Path.__init__(self, id_name)
+        self.add_raw_command(command_str)
+        self.finish_path()
+
+
 class LineArcPath(Path):
     def __init__(self, id_name, control_points, arc_radius, loop):
         digest_locals(self)

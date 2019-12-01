@@ -1,4 +1,4 @@
-from maplib.constants import NAN
+from maplib.constants import *
 
 from maplib.tools.assertions import is_standard_route
 from maplib.tools.assertions import station_on_route
@@ -184,13 +184,7 @@ class Station(object):
         return self
 
 
-class DistrictNameModel(object):
-    def __init__(self, name_eng, name_chn, x_coord, y_coord):
-        center_point = position(x_coord, y_coord)
-        digest_locals(self, ("name_eng", "name_chn", "center_point"))
-
-
-class WaterAreaNameModel(object):
+class SimpleNameModel(object):
     def __init__(self, name_eng, name_chn, x_coord, y_coord):
         center_point = position(x_coord, y_coord)
         digest_locals(self, ("name_eng", "name_chn", "center_point"))

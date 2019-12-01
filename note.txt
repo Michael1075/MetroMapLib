@@ -2,6 +2,7 @@
 The project is paused. The code is available on GitHub.
 
 2019/10/1
+TODO
 Check all "#" character and sort the head files.
 Run SVG online: https://www.runoob.com/try/try.php?filename=trysvg_path
 
@@ -56,5 +57,9 @@ git push -h
 
 2019/11/16
 
-2019/11/22
+2019/11/23
+
+2019/11/30
+TODO
+Make the whole grid shiftable. Consider using gradient color on sides.
 

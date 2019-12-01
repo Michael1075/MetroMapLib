@@ -1,5 +1,4 @@
-from maplib.parameters import DECIMAL_DIGITS
-from maplib.parameters import TOLERANCE
+from maplib.parameters import *
 
 
 def get_first_item(vals):
@@ -47,4 +46,12 @@ def nums_to_string(nums, separator = " "):
 
 def string_to_nums(string, separator = " "):
     return [eval(val_str) for val_str in string.split(separator)]
+
+
+def get_path_id_num(path_id_name):
+    return path_id_name[(path_id_name.index("-") + 1):]
+
+
+def get_path_id_name(path_id_num, font_type):
+    return "g{0}-{1}".format(TEX_FONT_CMDS.index(font_type), path_id_num)
 

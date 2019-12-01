@@ -74,7 +74,7 @@ class WebSystem(Group):
         self.add_station_point()
 
     def init_template_group(self):
-        self.template_group = Group("template")
+        self.template_group = Group(None)
         return self
 
     def init_dicts(self):
@@ -139,7 +139,7 @@ class WebSystem(Group):
         sub_route_group.set_style({
             "stroke-width": ROUTE_MINOR_STROKE_WIDTH,
         })
-        for metro in self.metro_objs[::-1]:
+        for metro in list(reversed(self.metro_objs)):
             route_path_id_name = "r" + str(metro.serial_num)
             if metro.sub_color is None:
                 main_route_group.use_with_style(route_path_id_name, {

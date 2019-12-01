@@ -9,10 +9,9 @@ from maplib.tools.table_tools import get_row_val
 from maplib.tools.table_tools import get_table_val
 from maplib.tools.table_tools import open_xlsx_file
 from maplib.utils.color import Color
-from maplib.utils.models import DistrictNameModel
 from maplib.utils.models import Metro
+from maplib.utils.models import SimpleNameModel
 from maplib.utils.models import Station
-from maplib.utils.models import WaterAreaNameModel
 
 
 class Constructor(object):
@@ -20,11 +19,10 @@ class Constructor(object):
         self.database = open_xlsx_file(file_name)
         self.build_metros()
         self.build_stations()
-        self.build_district_names()
-        self.build_water_area_names()
+        self.build_other_stuff()
 
     def build_metros(self):
-        self.metros = []
+        self.metro_objs = []
         self.all_stations_data_dict = dict()
         main_sheet = self.database["main"]
         num_metros = main_sheet.max_row
@@ -46,14 +44,14 @@ class Constructor(object):
                 route_type,
                 metro_stations_data
             )
-            self.metros.append(metro)
+            self.metro_objs.append(metro)
             self.all_stations_data_dict.update(metro.real_stations_data_dict)
-        self.metros.sort(key = lambda metro: metro.serial_num)
+        self.metro_objs.sort(key = lambda metro: metro.serial_num)
         return self
 
     def build_stations(self):
         self.station_coord_tuples = list(self.all_stations_data_dict.keys())
-        self.stations = []
+        self.station_objs = []
         while self.station_coord_tuples:
             self.build_station()
 
@@ -82,7 +80,7 @@ class Constructor(object):
             get_first_item(station_names_chn),
             get_first_item(label_simple_directions)
         )
-        self.stations.append(station)
+        self.station_objs.append(station)
         return self
 
     def expand_station(self, station_coord_tuple):
@@ -107,11 +105,13 @@ class Constructor(object):
         self.__setattr__(obj_name, obj_list)
         return self
 
-    def build_district_names(self):
-        self.build_obj("district_names", "district name", 4, DistrictNameModel)
+    def build_simple_obj(self, obj_name, table_name):
+        self.build_obj(obj_name, table_name, 4, SimpleNameModel)
         return self
 
-    def build_water_area_names(self):
-        self.build_obj("water_area_names", "water area name", 4, WaterAreaNameModel)
+    def build_other_stuff(self):
+        self.build_simple_obj("district_name_objs", "district name")
+        self.build_simple_obj("river_name_objs", "river name")
+        self.build_simple_obj("lake_name_objs", "lake name")
         return self
 

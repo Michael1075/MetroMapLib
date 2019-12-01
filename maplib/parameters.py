@@ -1,7 +1,7 @@
+import json
 import os
 
-from maplib.constants import BLACK
-from maplib.constants import WHITE
+from maplib.constants import *
 
 from maplib.tools.position import position
 from maplib.utils.color import Color
@@ -10,15 +10,24 @@ from maplib.utils.color import Color
 # dirs
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 FILE_DIR = os.path.join(THIS_DIR, "files")
-INPUT_FILE_NAME = os.path.join(FILE_DIR, "input_files", "input.xlsx")
-OUTPUT_FILE_NAME = os.path.join(FILE_DIR, "output_files", "output.svg")
-TEX_DIR = os.path.join(FILE_DIR, "Tex")
+INPUT_FILE_DIR = os.path.join(FILE_DIR, "input_files", "input.xlsx")
+OUTPUT_FILE_DIR = os.path.join(FILE_DIR, "output_files", "output.svg")
+TEX_DIR = os.path.join(FILE_DIR, "tex")
+JSON_DIR = os.path.join(FILE_DIR, "json")
 
 # tex base
 TEMPLATE_TEX_FILE = os.path.join(THIS_DIR, "tex_template.tex")
-with open(TEMPLATE_TEX_FILE, "r") as infile:
-    TEMPLATE_TEX_FILE_BODY = infile.read()
+with open(TEMPLATE_TEX_FILE, "r") as input_file:
+    TEMPLATE_TEX_FILE_BODY = input_file.read()
 TEX_TO_REPLACE = "YourTextHere"
+
+# json base
+JSON_TEX_FILE_DIR = os.path.join(JSON_DIR, "tex_file.json")
+JSON_TEX_PATH_DIR = os.path.join(JSON_DIR, "tex_path.json")
+with open(JSON_TEX_FILE_DIR, "r") as output_file:
+    GLOBAL_FILE_DICT = json.load(output_file)
+with open(JSON_TEX_PATH_DIR, "r") as output_file:
+    GLOBAL_PATH_DICT = json.load(output_file)
 
 # svg base
 SVG_VERSION = "1.1"
@@ -45,6 +54,12 @@ TEX_FONT_CMDS = TEX_FONT_CMDS_CHN + TEX_FONT_CMDS_ENG
 TEX_BASE_SCALE_FACTOR = 0.07
 PRINT_TEX_WRITING_PROGRESS = True
 
+# grid
+GRID_STEP = 50.0
+GRID_STROKE_WIDTH = 0.3
+GRID_STROKE_OPACITY = 0.15
+GRID_COLOR = Color(180, 180, 180)
+
 # geography
 COASTLINE_ARC_RADIUS = 6.0
 RIVER_ARC_RADIUS_DICT = {
@@ -58,13 +73,19 @@ RIVER_WIDTH_DICT = {
 LAND_COLOR = WHITE
 WATER_AREA_COLOR = Color(217, 235, 247)
 
-# route and station
+# web system
+
+# route
 ROUTE_ARC_RADIUS = 2.0
 ROUTE_STROKE_WIDTH = 0.8
 ROUTE_MINOR_STROKE_WIDTH = 0.3
 ROUTE_STROKE_OPACITY = 0.7
+
+# station point
 STATION_POINT_RADIUS = 0.4
 STATION_POINT_FILL_OPACITY = 1.0
+
+#station frame
 FRAME_RADIUS_DICT = {
     "normal": 0.4,
     "interchange": 0.55
@@ -81,7 +102,8 @@ INTERCHANGE_STATION_FRAME_STROKE_COLOR = BLACK
 STATION_NAME_TEX_STYLE = {
     "small_buff": 0.1,
     "big_buff": 0.3,
-    "buff_between_lines": -0.2,
+    "tex_box_format": VERTICAL,
+    "tex_buff": -0.2,
     "scale_factor": {
         "chn": 1.4,
         "eng": 1.0,
@@ -101,7 +123,8 @@ STATION_NAME_TEX_STYLE = {
     },
 }
 DISTRICT_NAME_TEX_STYLE = {
-    "buff_between_lines": -0.2,
+    "tex_box_format": VERTICAL,
+    "tex_buff": -0.2,
     "scale_factor": {
         "chn": 2.5,
         "eng": 1.4,
@@ -112,11 +135,25 @@ DISTRICT_NAME_TEX_STYLE = {
     },
     "color": Color(120, 120, 120),
 }
-WATER_AREA_NAME_TEX_STYLE = {
-    "buff_between_lines": -0.2,
+RIVER_NAME_TEX_STYLE = {
+    "tex_box_format": HORIZONTAL,
+    "tex_buff": 1.0,
     "scale_factor": {
         "chn": 2.0,
-        "eng": 1.2,
+        "eng": 2.0,
+    },
+    "font_cmd": {
+        "chn": "songti",
+        "eng": "rmfamily",
+    },
+    "color": Color(93, 188, 218),
+}
+LAKE_NAME_TEX_STYLE = {
+    "tex_box_format": VERTICAL,
+    "tex_buff": -0.2,
+    "scale_factor": {
+        "chn": 2.2,
+        "eng": 1.4,
     },
     "font_cmd": {
         "chn": "songti",

@@ -22,6 +22,23 @@ class BackgroundFrame(Frame):
         self.align(ORIGIN, LD)
 
 
+class Grid(Path):
+    def __init__(self, id_name):
+        Path.__init__(self, id_name)
+        self.set_style({
+            "stroke": GRID_COLOR,
+            "stroke-opacity": GRID_STROKE_OPACITY,
+            "stroke-width": ROUTE_STROKE_WIDTH,
+        })
+        for k in range(*[round(val) for val in (GRID_STEP, WIDTH, GRID_STEP)]):
+            self.move_to(position(k, 0))
+            self.line_to(position(k, HEIGHT))
+        for k in range(*[round(val) for val in (GRID_STEP, HEIGHT, GRID_STEP)]):
+            self.move_to(position(0, k))
+            self.line_to(position(WIDTH, k))
+        self.finish_path()
+
+
 class ShanghaiMetroLogo(Group, Frame):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
