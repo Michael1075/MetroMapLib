@@ -1,6 +1,7 @@
 import concurrent.futures as ft
 
-from maplib.parameters import *
+import maplib.constants as consts
+import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
 from maplib.svg.tex import Tex
@@ -23,7 +24,7 @@ class TexNameTemplate(Group):
 
     def get_aligning_information(self, obj):
         aligned_point = obj.center_point
-        aligned_direction = ORIGIN
+        aligned_direction = consts.ORIGIN
         return (aligned_point, aligned_direction)
 
     def get_partial_groups(self):
@@ -87,7 +88,7 @@ class TexNameTemplate(Group):
         shadow_group.set_style({
             "fill": None,
             "stroke": shadow_style["color"],
-            "stroke-width": shadow_style["stroke_width"] * 2 / TEX_BASE_SCALE_FACTOR,
+            "stroke-width": shadow_style["stroke_width"] * 2 / params.TEX_BASE_SCALE_FACTOR,
             "stroke-opacity": shadow_style["opacity"],
         })
         shadow_group.use(self.body_group_id_name)
@@ -96,7 +97,7 @@ class TexNameTemplate(Group):
 
 
 class StationName(TexNameTemplate):
-    tex_style = STATION_NAME_TEX_STYLE
+    tex_style = params.STATION_NAME_TEX_STYLE
     body_group_id_name = "station_name_body"
 
     def get_aligning_information(self, station):
@@ -109,13 +110,13 @@ class StationName(TexNameTemplate):
 
 
 class DistrictName(TexNameTemplate):
-    tex_style = DISTRICT_NAME_TEX_STYLE
+    tex_style = params.DISTRICT_NAME_TEX_STYLE
 
 
 class RiverName(TexNameTemplate):
-    tex_style = RIVER_NAME_TEX_STYLE
+    tex_style = params.RIVER_NAME_TEX_STYLE
 
 
 class LakeName(TexNameTemplate):
-    tex_style = LAKE_NAME_TEX_STYLE
+    tex_style = params.LAKE_NAME_TEX_STYLE
 

@@ -2,4 +2,5 @@
 *.bat
 
 note.txt
-construct_tex.py
+construct_json.py
+maplib/files/json/*_copy.json

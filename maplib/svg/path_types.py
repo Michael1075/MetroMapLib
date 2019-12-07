@@ -1,7 +1,7 @@
 import numpy as np
 
 from maplib.svg.svg_element import Path
-from maplib.tools.assertions import is_standard_route
+from maplib.tools.assertions import assert_is_standard_route
 from maplib.tools.config_ops import digest_locals
 from maplib.tools.simple_functions import adjacent_n_tuples
 from maplib.tools.space_ops import abs_arg_pair
@@ -19,7 +19,7 @@ class CommandPath(Path):
 class LineArcPath(Path):
     def __init__(self, id_name, control_points, arc_radius, loop):
         digest_locals(self)
-        is_standard_route(control_points, loop)
+        assert_is_standard_route(control_points, loop)
         Path.__init__(self, id_name)
         self.num_arcs = len(control_points)
         if not self.loop:

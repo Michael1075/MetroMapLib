@@ -1,7 +1,7 @@
 import json
 import os
 
-from maplib.constants import *
+import maplib.constants as consts
 
 from maplib.tools.position import position
 from maplib.utils.color import Color
@@ -47,6 +47,10 @@ WIDTH = 400.0
 HEIGHT = 300.0
 SIZE = position(WIDTH, HEIGHT)
 
+# mask
+MASK_BASE_COLOR = consts.WHITE
+MASK_COLOR = consts.BLACK
+
 # tex
 TEX_FONT_CMDS_CHN = ("songti", "heiti", "lishu", "youyuan")
 TEX_FONT_CMDS_ENG = ("rmfamily", "sffamily")
@@ -70,7 +74,7 @@ RIVER_WIDTH_DICT = {
     "Huangpu_River": 5.0,
     "Suzhou_Creek": 2.0,
 }
-LAND_COLOR = WHITE
+LAND_COLOR = consts.WHITE
 WATER_AREA_COLOR = Color(217, 235, 247)
 
 # web system
@@ -95,14 +99,14 @@ FRAME_STROKE_WIDTH_DICT = {
     "interchange": 0.1
 }
 FRAME_STROKE_OPACITY = 0.9
-FRAME_FILL_COLOR = WHITE
-INTERCHANGE_STATION_FRAME_STROKE_COLOR = BLACK
+FRAME_FILL_COLOR = consts.WHITE
+INTERCHANGE_STATION_FRAME_STROKE_COLOR = consts.BLACK
 
 # tex style
 STATION_NAME_TEX_STYLE = {
     "small_buff": 0.1,
     "big_buff": 0.3,
-    "tex_box_format": VERTICAL,
+    "tex_box_format": consts.VERTICAL,
     "tex_buff": -0.2,
     "scale_factor": {
         "chn": 1.4,
@@ -113,17 +117,17 @@ STATION_NAME_TEX_STYLE = {
         "eng": "sffamily",
     },
     "color": {
-        "chn": BLACK,
+        "chn": consts.BLACK,
         "eng": Color(140, 140, 140),
     },
     "shadow": {
-        "color": WHITE,
+        "color": consts.WHITE,
         "stroke_width": 0.07,
         "opacity": 0.7,
     },
 }
 DISTRICT_NAME_TEX_STYLE = {
-    "tex_box_format": VERTICAL,
+    "tex_box_format": consts.VERTICAL,
     "tex_buff": -0.2,
     "scale_factor": {
         "chn": 2.5,
@@ -135,32 +139,31 @@ DISTRICT_NAME_TEX_STYLE = {
     },
     "color": Color(120, 120, 120),
 }
+WATER_AREA_NAME_TEX_STYLE = {
+    "font_cmd": {
+        "chn": "songti",
+        "eng": "rmfamily",
+    },
+    "color": Color(93, 188, 218),
+}
 RIVER_NAME_TEX_STYLE = {
-    "tex_box_format": HORIZONTAL,
+    "tex_box_format": consts.HORIZONTAL,
     "tex_buff": 1.0,
     "scale_factor": {
         "chn": 2.0,
         "eng": 2.0,
     },
-    "font_cmd": {
-        "chn": "songti",
-        "eng": "rmfamily",
-    },
-    "color": Color(93, 188, 218),
 }
+RIVER_NAME_TEX_STYLE.update(WATER_AREA_NAME_TEX_STYLE)
 LAKE_NAME_TEX_STYLE = {
-    "tex_box_format": VERTICAL,
+    "tex_box_format": consts.VERTICAL,
     "tex_buff": -0.2,
     "scale_factor": {
         "chn": 2.2,
         "eng": 1.4,
     },
-    "font_cmd": {
-        "chn": "songti",
-        "eng": "rmfamily",
-    },
-    "color": Color(93, 188, 218),
 }
+LAKE_NAME_TEX_STYLE.update(WATER_AREA_NAME_TEX_STYLE)
 
 # metro logo
 METRO_LOGO_COLOR = Color(215, 5, 8)

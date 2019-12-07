@@ -33,6 +33,7 @@ python -m pip --default-timeout=1000 install -U -r requirements.txt
 
 Run `python main.py` under the root file.
 Note, new tex files requires your GPU to run close to its full capacity by multithreading. However, if all tex are settled, the main process does not take long.
+The file `json_tool.py` is a tool to config json files, which store path data of tex.
 
 
 ## View SVG

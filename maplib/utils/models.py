@@ -1,7 +1,7 @@
-from maplib.constants import *
+import maplib.constants as consts
 
-from maplib.tools.assertions import is_standard_route
-from maplib.tools.assertions import station_on_route
+from maplib.tools.assertions import assert_is_standard_route
+from maplib.tools.assertions import assert_station_on_route
 from maplib.tools.config_ops import digest_locals
 from maplib.tools.numpy_type_tools import np_float
 from maplib.tools.numpy_type_tools import np_to_tuple
@@ -24,7 +24,7 @@ class Metro(object):
     main_color: a Color obj;
     sub_color: either a Color obj, None or "None";
     route_type: a str in ("l", "o", "y");
-    stations_data: an array-like database, each of which should be of length 7 and be the following format:
+    stations_data: an array-like database which contains 7 elements as the following format:
         tuple(
             station_name_eng: a str,
             station_name_chn: a str,
@@ -34,8 +34,8 @@ class Metro(object):
             ),
             station_x_coord: an int,
             station_y_coord: an int,
-            simplified_direction: a positive integer in range(4),
-            label_simple_direction: a positive integer in range(8)
+            simplified_direction: an integer in range(4),
+            label_simple_direction: an integer in range(8)
         ).
     """
     def __init__(self, serial_num, metro_name, main_color, sub_color, route_type, stations_data):
@@ -51,7 +51,7 @@ class Metro(object):
         """
         stations_data_dict
         dict_key: a tuple of a given point
-        dict_value: tuple(
+        dict_val: tuple(
             sign,
             station_name_eng,
             station_name_chn,
@@ -59,7 +59,7 @@ class Metro(object):
         )
         real_stations_data_dict
         dict_key: a tuple of a real station
-        dict_value: tuple(
+        dict_val: tuple(
             station_color,
             sub_color,
             station_name_eng,
@@ -68,7 +68,7 @@ class Metro(object):
         )
         coord_to_direction_dict
         dict_key: a tuple of a point either given or calculated
-        dict_value: simplified_direction
+        dict_val: simplified_direction
         """
         self.stations_data_dict = dict()
         self.real_stations_data_dict = dict()
@@ -114,11 +114,11 @@ class Metro(object):
         return self
 
     def add_real_stations_data(self, control_points, station_coords):
-        is_standard_route(control_points, self.loop)
+        assert_is_standard_route(control_points, self.loop)
         for station_coord in station_coords:
             station_data = self.stations_data_dict[np_to_tuple(station_coord)]
             if station_data[0] != "*":
-                station_on_route(station_coord, control_points, self.loop)
+                assert_station_on_route(station_coord, control_points, self.loop)
                 real_station_data = list(station_data)[1:]
                 real_station_data = [self.main_color, self.sub_color] + real_station_data
                 self.real_stations_data_dict[np_to_tuple(station_coord)] = tuple(real_station_data)
@@ -146,7 +146,7 @@ class Metro(object):
             append_point = self.append_new_point(point1, point2, simplified_direction)
             control_points = self.update_control_point(point1, append_point, control_points)
             control_points = self.update_control_point(point2, append_point, control_points)
-        elif intersection_point is not NAN:
+        elif intersection_point is not consts.NAN:
             control_points.append(intersection_point)
         return control_points
 

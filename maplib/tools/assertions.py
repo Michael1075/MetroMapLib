@@ -1,6 +1,6 @@
 import numpy as np
 
-from maplib.constants import NAN
+import maplib.constants as consts
 
 from maplib.tools.numpy_type_tools import np_to_tuple
 from maplib.tools.simple_functions import adjacent_n_tuples
@@ -11,53 +11,53 @@ from maplib.tools.space_ops import get_simplified_direction
 def assert_true_or_raise(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        assert result is True, ValueError(func.__name__ + " " + str(np_to_tuple(result)))
+        if result is not True:
+            raise ValueError(func.__name__ + " " + str(np_to_tuple(result)))
     return wrapper
 
 
-def is_number(data):
-    return isinstance(data, (int, float, np.int32, np.int64))
+def is_number(data, float_sensitive = True):
+    # Note, np.float64 is a subclass of float.
+    if float_sensitive:
+        return isinstance(data, float)
+    return isinstance(data, (int, float, np.int32, np.int64, np.float32))
 
 
-def is_np_data(data, required_dtype = None, required_shape = None):
+def is_np_data(data, required_dtype = np.float64, required_shape = None):
     """
-    The parameter required_shape should be a tuple which consists positive integers or None.
-    e.g. required_shape = (3, 1, None)
+    The parameter required_shape should be a tuple consists positive integers or None.
     """
     if not isinstance(data, np.ndarray):
         return False
-    if required_dtype is None:
-        if all([
-            num_type not in str(data.dtype)
-            for num_type in ["int", "float"]
-        ]):
-            return False
-    elif required_dtype != str(data.dtype):
+    if data.dtype != required_dtype:
         return False
     if required_shape is None:
         return True
-    data_shape = np.shape(data)
-    required_dimension = len(required_shape)
-    if len(data_shape) != required_dimension:
+    if len(data.shape) != len(required_shape):
         return False
-    for k in range(required_dimension):
-        if required_shape[k] is not None:
-            if data_shape[k] != required_shape[k]:
-                return False
+    if all([(a == b or b is None) for a, b in zip(data.shape, required_shape)]):
+        return True
+    return False
+
+
+@assert_true_or_raise
+def assert_is_number(val):
+    if not is_number(val):
+        return val
     return True
 
 
 @assert_true_or_raise
-def is_2D_data(*datum):
-    for data in datum:
-        if not is_np_data(data, required_shape = (2,)):
-            return data
+def assert_is_2D_data(data):
+    if not is_np_data(data, required_shape = (2,)):
+        return data
     return True
 
 
 @assert_true_or_raise
-def is_standard_route(points, loop):
-    is_2D_data(*points)
+def assert_is_standard_route(points, loop):
+    for point in points:
+        assert_is_2D_data(point)
     for a, b, c in adjacent_n_tuples(points, 3, loop):
         try:
             simplified_angle = get_simplified_angle(a, b, c)
@@ -69,15 +69,15 @@ def is_standard_route(points, loop):
 
 
 @assert_true_or_raise
-def station_on_route(station, points, loop):
+def assert_station_on_route(station, points, loop):
     for a, b in adjacent_n_tuples(points, 2, loop):
         direction1 = get_simplified_direction(b - a)
         direction2 = get_simplified_direction(station - a)
         direction3 = get_simplified_direction(b - station)
         if all([
-            direction1 is not NAN,
-            any([direction2 is NAN, direction2 == direction1]),
-            any([direction3 is NAN, direction3 == direction1])
+            direction1 is not consts.NAN,
+            any([direction2 is consts.NAN, direction2 == direction1]),
+            any([direction3 is consts.NAN, direction3 == direction1])
         ]):
             return True
     return station

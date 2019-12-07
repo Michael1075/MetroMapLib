@@ -1,4 +1,4 @@
-from maplib.constants import ORIGIN
+import maplib.constants as consts
 
 
 class Alignable(object):
@@ -6,12 +6,12 @@ class Alignable(object):
         self.box_size = box_size
         return self
 
-    def align(self, aligned_point, aligned_direction = ORIGIN):
+    def align(self, aligned_point, aligned_direction = consts.ORIGIN):
         self.center_point = aligned_point - self.get_critical_vector(aligned_direction)
         return self
 
-    def align_at_origin(self, aligned_direction = ORIGIN):
-        self.align(ORIGIN, aligned_direction)
+    def align_at_origin(self, aligned_direction = consts.ORIGIN):
+        self.align(consts.ORIGIN, aligned_direction)
         return self
 
     def get_critical_vector(self, direction):

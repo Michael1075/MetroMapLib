@@ -1,14 +1,15 @@
+from functools import reduce
 import xml.etree.ElementTree as ET
 
-from maplib.parameters import *
+import maplib.parameters as params
 
 from maplib.svg.svg_element import Defs
 from maplib.svg.svg_element import Group
 from maplib.svg.svg_element import Svg
 from maplib.svg.path_types import CommandPath
-from maplib.svg.tex_instance import TexNameTemplate
-from maplib.tools.file_tools import add_tex_to_json
-from maplib.tools.file_tools import modify_svg_file
+from maplib.tools.simple_functions import merge_dicts
+from maplib.tools.simple_functions import sort_dict_by_key
+from maplib.tools.tex_json_file_tools import update_generated_tex_in_json
 
 
 class Canvas(object):
@@ -22,56 +23,57 @@ class Canvas(object):
 
     def construct(self):
         """
-        Implemented in subclasses
+        Implemented in subclasses.
         """
         pass
 
     def init_background(self):
-        self.root = Svg(None)
-        self.defs = Defs(None)
+        self.root = Svg()
+        self.defs = Defs()
         self.root.append(self.defs)
         self.canvas = Group("canvas").flip_y()
         self.root.append(self.canvas)
+        self.path_group = Group("paths")
+        self.define(self.path_group)
 
     def init_tex_objs_list(self):
         self.global_tex_objs = []
 
     def define(self, component):
+        if hasattr(component, "tex_objs"):
+            self.global_tex_objs.extend(component.tex_objs)
         self.defs.append(component)
-
-    def define_tex(self, component):
-        self.global_tex_objs.extend(component.tex_objs)
-        self.define(component)
 
     def draw(self, id_name):
         self.canvas.use(id_name)
 
-    def config(self, ClassName, id_name, *args):
-        obj = ClassName(id_name, *args)
-        if isinstance(obj, TexNameTemplate):
-            self.define_tex(obj)
-        else:
-            self.define(obj)
-            if hasattr(obj, "template_group"):
-                self.define(obj.template_group)
-        self.draw(id_name)
-
     def define_path(self):
-        global_tex_path_id_set = set()
-        for tex_obj in self.global_tex_objs:
-            for path_id, path_cmd in tex_obj.tex_paths_cmd_dict.items():
-                if path_id not in global_tex_path_id_set:
-                    global_tex_path_id_set.add(path_id)
-                    path_obj = CommandPath(path_id, path_cmd)
-                    path_obj.finish_path()
-                    self.define(path_obj)
+        global_tex_paths_cmd_dict = sort_dict_by_key(reduce(
+            merge_dicts,
+            [tex_obj.tex_paths_cmd_dict for tex_obj in self.global_tex_objs]
+        ))
+        for path_id, path_cmd in global_tex_paths_cmd_dict.items():
+            path_obj = CommandPath(path_id, path_cmd)
+            self.path_group.append(path_obj)
 
     def modify_json(self):
-        add_tex_to_json(self.global_tex_objs, False)
-        return self
+        update_generated_tex_in_json(self.global_tex_objs)
+    
+    def modify_svg_str(self, string):
+        string = params.SVG_HEAD + string
+        string = string.replace(" />", "/>")
+        string = string.replace("><", ">\n<")
+        return string
+    
+    def modify_svg_file(self, file_name):
+        with open(file_name, "r") as input_file:
+            string = "".join(input_file.readlines())
+        result = self.modify_svg_str(string)
+        with open(file_name, "w") as output_file:
+            output_file.write(result)
 
     def write_to_file(self, file_name):
         file_body = ET.ElementTree(self.root)
         file_body.write(file_name)
-        modify_svg_file(file_name)
+        self.modify_svg_file(file_name)
 

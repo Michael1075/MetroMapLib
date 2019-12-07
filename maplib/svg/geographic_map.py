@@ -1,6 +1,6 @@
 import numpy as np
 
-from maplib.constants import *
+import maplib.constants as consts
 
 from maplib.svg.geography import Geography
 from maplib.svg.geography import Island
@@ -20,7 +20,7 @@ class Shanghai(Land):
             [380, 18],
             [362, 0],
         )
-        Land.__init__(self, "Shanghai", control_points, [LD, LU])
+        Land.__init__(self, "Shanghai", control_points, [consts.LD, consts.LU])
 
 
 class ChongmingIsland(Land):
@@ -30,7 +30,7 @@ class ChongmingIsland(Land):
             [364, 268],
             [400, 268],
         )
-        Land.__init__(self, "Chongming_Island", control_points, [RU])
+        Land.__init__(self, "Chongming_Island", control_points, [consts.RU])
 
 
 class ChangxingIsland(Land):

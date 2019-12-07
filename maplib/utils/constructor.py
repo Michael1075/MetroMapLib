@@ -1,6 +1,6 @@
 import copy
 
-from maplib.constants import *
+import maplib.constants as consts
 
 from maplib.tools.simple_functions import get_first_item
 from maplib.tools.simple_functions import string_to_nums
@@ -63,9 +63,9 @@ class Constructor(object):
             self.station_coord_tuples.remove(adjacent_coord)
         x, y = zip(*adjacent_coord_list)
         if max(y) == min(y):
-            station_direction = HORIZONTAL
+            station_direction = consts.HORIZONTAL
         elif max(x) == min(x):
-            station_direction = VERTICAL
+            station_direction = consts.VERTICAL
         else:
             raise AssertionError
         center_point = center_of_mass(adjacent_coord_list)
@@ -89,7 +89,7 @@ class Constructor(object):
         while len(new_adjacent_coord_set - old_adjacent_coord_set) != 0:
             old_adjacent_coord_set = copy.copy(new_adjacent_coord_set)
             for coord in list(old_adjacent_coord_set):
-                for direction in FOUR_BASE_DIRECTIONS:
+                for direction in consts.FOUR_BASE_DIRECTIONS:
                     extended_coord_tuple = tuple(coord + direction)
                     if extended_coord_tuple in self.station_coord_tuples:
                         new_adjacent_coord_set.add(extended_coord_tuple)

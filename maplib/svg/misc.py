@@ -1,54 +1,66 @@
-from maplib.constants import *
-from maplib.parameters import *
+import maplib.constants as consts
+import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
+from maplib.svg.svg_element import LinearGradient
+from maplib.svg.svg_element import Mask
 from maplib.svg.svg_element import Path
 from maplib.svg.svg_element import Rectangle
 from maplib.tools.position import position
 from maplib.utils.alignable import Frame
 
 
+class GradientMask(Mask):
+    # TODO, use LinearGradient to create a mask
+    # with gradient on four sides.
+    pass
+
+
 class FrameRectangle(Rectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name, SIZE)
+        Rectangle.__init__(self, id_name, params.SIZE)
         self.set_style({
-            "stroke-width": 0,
+            "stroke-width": 0.,
         })
 
 
 class BackgroundFrame(Frame):
     def __init__(self):
-        Frame.__init__(self, SIZE)
-        self.align(ORIGIN, LD)
+        Frame.__init__(self, params.SIZE)
+        self.align_at_origin(consts.LD)
 
 
 class Grid(Path):
     def __init__(self, id_name):
         Path.__init__(self, id_name)
         self.set_style({
-            "stroke": GRID_COLOR,
-            "stroke-opacity": GRID_STROKE_OPACITY,
-            "stroke-width": ROUTE_STROKE_WIDTH,
+            "stroke": params.GRID_COLOR,
+            "stroke-opacity": params.GRID_STROKE_OPACITY,
+            "stroke-width": params.ROUTE_STROKE_WIDTH,
         })
-        for k in range(*[round(val) for val in (GRID_STEP, WIDTH, GRID_STEP)]):
+        for k in range(*[round(val) for val in (
+            params.GRID_STEP, params.WIDTH, params.GRID_STEP
+        )]):
             self.move_to(position(k, 0))
-            self.line_to(position(k, HEIGHT))
-        for k in range(*[round(val) for val in (GRID_STEP, HEIGHT, GRID_STEP)]):
+            self.line_to(position(k, params.HEIGHT))
+        for k in range(*[round(val) for val in (
+            params.GRID_STEP, params.HEIGHT, params.GRID_STEP
+        )]):
             self.move_to(position(0, k))
-            self.line_to(position(WIDTH, k))
+            self.line_to(position(params.WIDTH, k))
         self.finish_path()
 
 
 class ShanghaiMetroLogo(Group, Frame):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
-        scale_factor = METRO_LOGO_SIZE
-        Frame.__init__(self, RU * scale_factor)
-        self.align(METRO_LOGO_ALIGNED_POINT)
-        shift_vector = self.get_critical_point(LD)
-        self.scale(scale_factor, shift_vector)
+        scale_factor = params.METRO_LOGO_SIZE
+        Frame.__init__(self, consts.RU * scale_factor)
+        self.align(params.METRO_LOGO_ALIGNED_POINT)
+        shift_vector = self.get_critical_point(consts.LD)
+        self.scale_and_shift(scale_factor, shift_vector)
         self.set_style({
-            "fill": METRO_LOGO_COLOR,
+            "fill": params.METRO_LOGO_COLOR,
         })
         path = self.get_path()
         self.append(path)

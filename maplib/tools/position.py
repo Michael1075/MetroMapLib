@@ -1,9 +1,8 @@
-from maplib.constants import RIGHT
-from maplib.constants import UP
+import maplib.constants as consts
 
 
 def position(x, y):
-    return x * RIGHT + y * UP
+    return x * consts.RIGHT + y * consts.UP
 
 
 def position_list(*coords):

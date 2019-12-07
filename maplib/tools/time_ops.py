@@ -17,7 +17,8 @@ def timer_decorator(decorator_func = None):
             begin = time.time()
             result = new_func(*args, **kwargs)
             end = time.time()
-            print("Consumed time of function {0}: {1:.3f} second(s)".format(func_name, end - begin))
+            msg = "Consumed time of function {0}: {1:.3f} second(s)"
+            print(msg.format(func_name, end - begin))
             return result
         return wrapper
     return decorator

@@ -1,6 +1,6 @@
 import numpy as np
 
-from maplib.constants import *
+import maplib.constants as consts
 
 from maplib.tools.simple_functions import close_to
 from maplib.tools.simple_functions import shrink_value
@@ -8,32 +8,32 @@ from maplib.tools.simple_functions import shrink_value
 
 def arg(point):
     """
-    Return a value in [-PI, PI)
+    Return a value in [-PI, PI).
     """
     x, y = point
     if x == 0:
         if y == 0:
-            return NAN
+            return consts.NAN
         if y > 0:
-            return PI / 2
-        return -PI / 2
+            return consts.PI / 2
+        return -consts.PI / 2
     argument = np.arctan(y / x)
     if x < 0:
         if y > 0:
-            return argument + PI
-        return argument - PI
+            return argument + consts.PI
+        return argument - consts.PI
     return argument
 
 
 def arg_principle(argument):
     """
-    Return a value in [-PI, PI)
+    Return a value in [-PI, PI).
     """
-    return shrink_value(argument, -PI, PI)
+    return shrink_value(argument, -consts.PI, consts.PI)
 
 
 def abs_arg_pair(abs_val, arg_val):
-    return scale(rotate(RIGHT, arg_val), abs_val)
+    return scale(rotate(consts.RIGHT, arg_val), abs_val)
 
 
 def unify_vector(vector):
@@ -45,7 +45,7 @@ def scale_about_origin(point, scale_factor):
     return scale_factor * point
 
 
-def scale(point, scale_factor, about_point = ORIGIN):
+def scale(point, scale_factor, about_point = consts.ORIGIN):
     result = point - about_point
     result = scale_about_origin(result, scale_factor)
     result += about_point
@@ -57,7 +57,7 @@ def rotate_about_origin(point, angle):
     return rotation_matrix @ point
 
 
-def rotate(point, angle, about_point = ORIGIN):
+def rotate(point, angle, about_point = consts.ORIGIN):
     result = point - about_point
     result = rotate_about_origin(result, angle)
     result += about_point
@@ -74,8 +74,7 @@ def get_2D_rotation_matrix(angle):
 
 def get_2D_line_func_coefficients(point, theta):
     """
-    Return (a, b, c),
-    which satisfies a * x + b * y = c
+    Return (a, b, c) which satisfies a * x + b * y = c.
     """
     x, y = point
     a = np.sin(theta)
@@ -95,7 +94,7 @@ def solve_intersection_point(point1, theta1, point2, theta2):
     A_b_rank = np.linalg.matrix_rank(np.c_[A, b[:, None]])
     if A_b_rank == 2:
         return
-    return NAN
+    return consts.NAN
 
 
 def center_of_mass(points_list):
@@ -112,20 +111,16 @@ def get_angle(a, b, c):
     return arg_principle(arg_end - arg_begin)
 
 
-def simplify_angle(angle):
-    """
-    In simplified angle units, PI is equivalent to 4
-    """
-    return angle * 4 / PI
-
-
 def restore_angle(simplified_angle):
-    return simplified_angle * PI / 4
+    """
+    In simplified angle units, PI is equivalent to 4.
+    """
+    return simplified_angle * consts.PI / 4
 
 
 def get_simplified_direction(vector):
-    if np.allclose(vector, ORIGIN):
-        return NAN
+    if np.allclose(vector, consts.ORIGIN):
+        return consts.NAN
     x, y = vector
     if close_to(x, 0):
         return 2 if y > 0 else -2
@@ -147,11 +142,13 @@ def get_simplified_angle(a, b, c):
 def num_to_base_direction(num):
     if num is None:
         return
-    return EIGHT_BASE_DIRECTIONS[num]
+    return consts.EIGHT_BASE_DIRECTIONS[num]
 
 
 def get_positive_direction(direction):
-    assert direction in (HORIZONTAL, VERTICAL)
-    result = RIGHT if direction == HORIZONTAL else UP
-    return result
+    if direction == consts.HORIZONTAL:
+        return consts.RIGHT
+    if direction == consts.VERTICAL:
+        return consts.UP
+    raise ValueError(direction)
 

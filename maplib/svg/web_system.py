@@ -1,5 +1,5 @@
-from maplib.constants import *
-from maplib.parameters import *
+import maplib.constants as consts
+import maplib.parameters as params
 
 from maplib.svg.path_types import LineArcPath
 from maplib.svg.path_types import LPath
@@ -16,7 +16,7 @@ from maplib.tools.space_ops import get_positive_direction
 
 class Route(LineArcPath):
     def __init__(self, id_name, metro):
-        arc_radius = ROUTE_ARC_RADIUS
+        arc_radius = params.ROUTE_ARC_RADIUS
         if metro.route_type == "l":
             LPath.__init__(self, id_name, metro.control_points, arc_radius)
         elif metro.route_type == "o":
@@ -29,7 +29,7 @@ class Route(LineArcPath):
 
 class NormalStationFrame(Circle):
     def __init__(self, id_name, color):
-        radius = FRAME_RADIUS_DICT["normal"]
+        radius = params.FRAME_RADIUS_DICT["normal"]
         Circle.__init__(self, id_name, radius)
         self.set_style({
             "stroke": color,
@@ -38,13 +38,13 @@ class NormalStationFrame(Circle):
 
 class InterchangeStationFrame(Rectangle):
     def __init__(self, id_name, station_size, station_direction):
-        radius = FRAME_RADIUS_DICT["interchange"]
+        radius = params.FRAME_RADIUS_DICT["interchange"]
         digest_locals(self)
         x = station_size - 1 + 2 * radius
         y = 2 * radius
-        if station_direction == VERTICAL:
+        if station_direction == consts.VERTICAL:
             x, y = y, x
-        relative_coord = LD * radius
+        relative_coord = consts.LD * radius
         Rectangle.__init__(self, id_name, position(x, y))
         self.align_at_origin()
         self.set_corner_radius(radius)
@@ -52,7 +52,7 @@ class InterchangeStationFrame(Rectangle):
 
 class StationPoint(Circle):
     def __init__(self, id_name, color):
-        point_radius = STATION_POINT_RADIUS
+        point_radius = params.STATION_POINT_RADIUS
         Circle.__init__(self, id_name, point_radius)
         self.set_style({
             "fill": color,
@@ -100,7 +100,7 @@ class WebSystem(Group):
     def def_mask_rect(self):
         mask_rect_group = Group("mask_rect")
         mask_rect_group.use_with_style("frame_rect", {
-            "fill": WHITE,
+            "fill": params.MASK_BASE_COLOR,
         })
         self.template_group.append(mask_rect_group)
 
@@ -108,8 +108,8 @@ class WebSystem(Group):
         route_mask_group = Group("route_mask")
         route_mask_group.set_style({
             "fill": None,
-            "stroke-width": ROUTE_MINOR_STROKE_WIDTH,
-            "stroke": BLACK,
+            "stroke-width": params.ROUTE_MINOR_STROKE_WIDTH,
+            "stroke": params.MASK_COLOR,
         })
         for metro in self.metro_objs:
             route_path_id_name = "r" + str(metro.serial_num)
@@ -127,17 +127,17 @@ class WebSystem(Group):
         route_group = Group("route")
         route_group.set_style({
             "fill": None,
-            "stroke-opacity": ROUTE_STROKE_OPACITY,
+            "stroke-opacity": params.ROUTE_STROKE_OPACITY,
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
         })
         main_route_group = Group("main_route")
         main_route_group.set_style({
-            "stroke-width": ROUTE_STROKE_WIDTH,
+            "stroke-width": params.ROUTE_STROKE_WIDTH,
         })
         sub_route_group = Group("sub_route")
         sub_route_group.set_style({
-            "stroke-width": ROUTE_MINOR_STROKE_WIDTH,
+            "stroke-width": params.ROUTE_MINOR_STROKE_WIDTH,
         })
         for metro in list(reversed(self.metro_objs)):
             route_path_id_name = "r" + str(metro.serial_num)
@@ -169,7 +169,7 @@ class WebSystem(Group):
 
         normal_station_frame_group = Group("normal_station_frame")
         normal_station_frame_group.set_style({
-            "stroke-width": FRAME_STROKE_WIDTH_DICT["normal"],
+            "stroke-width": params.FRAME_STROKE_WIDTH_DICT["normal"],
         })
         for station in self.normal_stations:
             color = station.route_colors[0]
@@ -192,8 +192,8 @@ class WebSystem(Group):
 
         interchange_station_frame_group = Group("interchange_station_frame")
         interchange_station_frame_group.set_style({
-            "stroke": INTERCHANGE_STATION_FRAME_STROKE_COLOR,
-            "stroke-width": FRAME_STROKE_WIDTH_DICT["interchange"],
+            "stroke": params.INTERCHANGE_STATION_FRAME_STROKE_COLOR,
+            "stroke-width": params.FRAME_STROKE_WIDTH_DICT["interchange"],
         })
         for station in self.interchange_stations:
             station_id_name = station.station_direction + str(station.station_size)
@@ -205,8 +205,8 @@ class WebSystem(Group):
     def add_station_frame(self):
         station_frame_group = Group("station_frame")
         station_frame_group.set_style({
-            "fill": FRAME_FILL_COLOR,
-            "stroke-opacity": FRAME_STROKE_OPACITY,
+            "fill": params.FRAME_FILL_COLOR,
+            "stroke-opacity": params.FRAME_STROKE_OPACITY,
         })
         station_frame_group.use("normal_station_frame")
         station_frame_group.use("interchange_station_frame")
@@ -221,7 +221,7 @@ class WebSystem(Group):
             
         station_point_group = Group("station_point")
         station_point_group.set_style({
-            "fill-opacity": STATION_POINT_FILL_OPACITY,
+            "fill-opacity": params.STATION_POINT_FILL_OPACITY,
         })
         for station in self.interchange_stations:
             positive_direction = get_positive_direction(station.station_direction)

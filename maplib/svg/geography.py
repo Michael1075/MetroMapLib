@@ -1,5 +1,5 @@
-from maplib.constants import *
-from maplib.parameters import *
+import maplib.constants as consts
+import maplib.parameters as params
 
 from maplib.svg.misc import BackgroundFrame
 from maplib.svg.path_types import LPath
@@ -14,7 +14,7 @@ from maplib.tools.space_ops import unify_vector
 
 class Land(LPath):
     def __init__(self, id_name, control_points, add_corners = None):
-        arc_radius = COASTLINE_ARC_RADIUS
+        arc_radius = params.COASTLINE_ARC_RADIUS
         LPath.__init__(self, id_name, control_points, arc_radius)
         if add_corners is not None:
             background_frame = BackgroundFrame()
@@ -27,14 +27,14 @@ class Land(LPath):
 
 class Island(OPath):
     def __init__(self, id_name, control_points):
-        arc_radius = COASTLINE_ARC_RADIUS
+        arc_radius = params.COASTLINE_ARC_RADIUS
         OPath.__init__(self, id_name, control_points, arc_radius)
 
 
 class River(YPath):
     def __init__(self, id_name, control_points):
-        arc_radius = RIVER_ARC_RADIUS_DICT[id_name]
-        river_width = RIVER_WIDTH_DICT[id_name]
+        arc_radius = params.RIVER_ARC_RADIUS_DICT[id_name]
+        river_width = params.RIVER_WIDTH_DICT[id_name]
         digest_locals(self)
         main_control_points, sub_control_points = self.compute_river_control_points()
         YPath.__init__(self, id_name, main_control_points, sub_control_points, arc_radius)
@@ -47,8 +47,8 @@ class River(YPath):
         unit_vector = unify_vector(last_given_point - self.control_points[-2])
         middle_point = last_given_point + self.river_width * unit_vector / 2
         former_point = middle_point - self.arc_radius * unit_vector
-        last_right_point = rotate(former_point, PI / 2, middle_point)
-        last_left_point = rotate(former_point, -PI / 2, middle_point)
+        last_right_point = rotate(former_point, consts.PI / 2, middle_point)
+        last_left_point = rotate(former_point, -consts.PI / 2, middle_point)
         main_control_points = self.control_points[:-1]
         main_control_points.extend([middle_point, last_right_point])
         sub_control_points = [former_point, middle_point, last_left_point]
@@ -74,25 +74,25 @@ class Geography(Group):
 
     def background_rect(self):
         self.use_with_style("frame_rect", {
-            "fill": WATER_AREA_COLOR,
+            "fill": params.WATER_AREA_COLOR,
         })
         return self
 
     def init_groups(self):
         land_group = Group("land")
         land_group.set_style({
-            "fill": LAND_COLOR,
+            "fill": params.LAND_COLOR,
         })
         river_group = Group("river")
         river_group.set_style({
             "fill": None,
-            "stroke": WATER_AREA_COLOR,
+            "stroke": params.WATER_AREA_COLOR,
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
         })
         lake_group = Group("lake")
         lake_group.set_style({
-            "fill": WATER_AREA_COLOR,
+            "fill": params.WATER_AREA_COLOR,
         })
         digest_locals(self)
         self.append(land_group)
