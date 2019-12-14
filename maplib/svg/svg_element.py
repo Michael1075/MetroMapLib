@@ -4,31 +4,34 @@ import xml.etree.ElementTree as ET
 import maplib.constants as consts
 import maplib.parameters as params
 
-from maplib.tools.assertions import is_number
-from maplib.tools.assertions import assert_is_number
+from maplib.tools.assertions import assert_length
+from maplib.tools.assertions import assert_type
 from maplib.tools.simple_functions import modify_num
 from maplib.tools.simple_functions import nums_to_string
 from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import get_simplified_direction
 from maplib.utils.alignable import Alignable
-from maplib.utils.style import Style
+from maplib.utils.color import Color
 
 
 class ETElement(ET.Element):
     def __init__(self):
+        self.init_attrib_dict()
         ET.Element.__init__(self, self.tag_name, attrib = self.attrib)
+
+    def init_attrib_dict(self):
+        self.attrib = dict()
+        return self
 
 
 class Element(ETElement):
     def __init__(self, id_name):
-        self.init_attrib_dict()
+        ETElement.__init__(self)
         self.init_id(id_name)
         self.init_attrs()
-        ETElement.__init__(self)
 
     def append(self, subelement):
-        if not self.allow_append:
-            raise NotImplementedError
+        assert self.allow_append, NotImplementedError
         ETElement.append(self, subelement)
         if hasattr(subelement, "tex_objs"):
             if not hasattr(self, "tex_objs"):
@@ -38,10 +41,6 @@ class Element(ETElement):
 
     def init_tex_objs(self):
         self.tex_objs = []
-        return self
-
-    def init_attrib_dict(self):
-        self.attrib = dict()
         return self
 
     def init_id(self, id_name):
@@ -60,13 +59,12 @@ class Element(ETElement):
             return val
         if isinstance(val, Style):
             return val.get_style_xml_str()
-        if is_number(val):
+        if isinstance(val, float):
             return str(modify_num(val))
-        raise TypeError
+        raise TypeError(val)
 
     def set_attr_val(self, key, val):
-        if key not in self.attr_names:
-            raise NotImplementedError
+        assert key in self.attr_names, NotImplementedError(key)
         self.attrib[key] = self.attr_val_to_str(val)
         return self
 
@@ -79,22 +77,63 @@ class Element(ETElement):
         return self
 
 
+class Style(object):
+    key_to_types_dict = {
+        "fill": (Color, None, Element),
+        "fill-opacity": (float,),
+        "mask": (Element,),
+        "stop-color": (Color, None),
+        "stop-opacity": (float,),
+        "stroke": (Color, None),
+        "stroke-linecap": (str,),
+        "stroke-linejoin": (str,),
+        "stroke-opacity": (float,),
+        "stroke-width": (float,),
+    }
+
+    def __init__(self, style_dict):
+        self.style_dict = style_dict
+
+    def get_style_xml_str(self):
+        partial_strs = []
+        for key, val in self.style_dict.items():
+            val_str = self.get_val_str(key, val)
+            partial_strs.append("{0}:{1}".format(key, val_str))
+        return ";".join(partial_strs)
+
+    def get_val_str(self, key, val):
+        try:
+            valid_types = self.key_to_types_dict[key]
+        except KeyError:
+            raise NotImplementedError(key)
+        if val is None and None in valid_types:
+            return "none"
+        if isinstance(val, Color) and Color in valid_types:
+            return val.hex_str()
+        if isinstance(val, Element) and Element in valid_types:
+            return "url(#{0})".format(val.id_name)
+        if isinstance(val, float) and float in valid_types:
+            return str(modify_num(val))
+        if isinstance(val, str) and str in valid_types:
+            return val
+        raise TypeError(val)
+
+
 class Svg(Element):
     tag_name = "svg"
     attr_names = ("version", "xmlns", "xmlns:xlink", "width", "height")
     allow_append = True
 
     def __init__(self):
-        self.init_attrib_dict()
-        self.init_attrs()
         ETElement.__init__(self)
+        self.init_attrs()
 
     def init_attrs(self):
         self.set_attr_val("version", params.SVG_VERSION)
         self.set_attr_val("xmlns", params.SVG_XMLNS)
         self.set_attr_val("xmlns:xlink", params.SVG_XLINK)
-        self.set_attr_val("width", params.WIDTH)
-        self.set_attr_val("height", params.HEIGHT)
+        self.set_attr_val("width", params.FULL_WIDTH)
+        self.set_attr_val("height", params.FULL_HEIGHT)
         return self
 
 
@@ -104,7 +143,6 @@ class Defs(Element):
     allow_append = True
 
     def __init__(self):
-        self.init_attrib_dict()
         ETElement.__init__(self)
 
 
@@ -125,7 +163,9 @@ class Group(Element):
         return self
 
     def set_transform(self, prefix, transform_tuple):
-        assert prefix in ("matrix", "translate", "scale")
+        assert prefix in ("matrix", "translate", "scale"), NotImplementedError(prefix)
+        for val in transform_tuple:
+            assert_type(val, float)
         transform_str = "{0}({1})".format(prefix, nums_to_string(transform_tuple))
         self.set_attr_val("transform", transform_str)
         return self
@@ -137,29 +177,27 @@ class Group(Element):
         y_viewport  =  b d f  @  y_userspace
              1         0 0 1          1     
         """
-        assert len(matrix_tuple) == 6
+        assert_length(matrix_tuple, 6)
         self.set_transform("matrix", matrix_tuple)
         return self
 
     def shift(self, shift_vector):
-        assert len(shift_vector) == 2
+        assert_length(shift_vector, 2)
         self.set_transform("translate", shift_vector)
         return self
 
     def scale(self, scale_val):
-        assert_is_number(scale_val)
         self.set_transform("scale", (scale_val,))
         return self
 
     def scale_and_shift(self, scale_val, shift_vector):
-        assert_is_number(scale_val)
-        assert len(shift_vector) == 2
+        assert_length(shift_vector, 2)
         matrix_tuple = (scale_val, 0., 0., scale_val, *shift_vector)
         self.matrix(matrix_tuple)
         return self
 
     def flip_y(self, scale_val = 1.):
-        matrix_tuple = (scale_val, 0., 0., -scale_val, 0., params.HEIGHT)
+        matrix_tuple = (scale_val, 0., 0., -scale_val, 0., params.FULL_HEIGHT)
         self.matrix(matrix_tuple)
         return self
 
@@ -208,8 +246,8 @@ class Path(Element):
         return self
 
     def add_path_command(self, command, *cmd_vals):
-        assert len(cmd_vals) == self.command_num_dict[command]
-        assert command == "M" or self.path_strings
+        assert_length(cmd_vals, self.command_num_dict[command])
+        assert command == "M" or self.path_strings, ValueError(command)
         command_str = command + nums_to_string(cmd_vals)
         self.path_strings.append(command_str)
         return self
@@ -285,10 +323,9 @@ class Use(Element):
     allow_append = False
 
     def __init__(self, href_id_name, relative_coord = None):
-        self.init_attrib_dict()
+        ETElement.__init__(self)
         self.init_href_id_name(href_id_name)
         self.set_relative_coord(relative_coord)
-        ETElement.__init__(self)
 
     def init_href_id_name(self, href_id_name):
         self.set_attr_val("xlink:href", "#" + href_id_name)
@@ -311,7 +348,6 @@ class Circle(Alignable, Element):
         Element.__init__(self, id_name)
         self.set_box_size(2 * radius * consts.RU)
         self.set_attr_val("r", radius)
-        return self
 
     def align(self, aligned_point, aligned_direction = consts.ORIGIN):
         Alignable.align(self, aligned_point, aligned_direction)
@@ -336,7 +372,6 @@ class Rectangle(Alignable, Element):
         width, height = rect_size
         self.set_attr_val("width", width)
         self.set_attr_val("height", height)
-        return self
 
     def align(self, aligned_point, aligned_direction = consts.ORIGIN):
         Alignable.align(self, aligned_point, aligned_direction)
@@ -357,30 +392,48 @@ class Rectangle(Alignable, Element):
         return self
 
 
-class Stop(Element):#
+class Stop(Element):
     tag_name = "stop"
-    attr_names = ("id", "offset", "style")
+    attr_names = ("offset", "style")
     allow_append = False
 
-    def __init__(self, id_name, offset, stop_color):
-        Element.__init__(self, id_name)
+    def __init__(self, offset, stop_color, stop_opacity):
+        ETElement.__init__(self)
         self.set_attr_val("offset", offset)
         self.set_style({
             "stop-color": stop_color,
+            "stop-opacity": stop_opacity,
         })
 
 
-class LinearGradient(Element):#
+class LinearGradient(Element):
     tag_name = "linearGradient"
     attr_names = ("id", "gradientUnits", "x1", "y1", "x2", "y2")
     allow_append = True
 
     def __init__(self, id_name, gradient_direction):
+        self.gradient_direction = gradient_direction
         Element.__init__(self, id_name)
+        self.init_attrs()
+
+    def init_attrs(self):
         self.set_attr_val("gradientUnits", "objectBoundingBox")
-        index_val = (get_simplified_direction(gradient_direction) + 4) // 2
+        index_num = (get_simplified_direction(self.gradient_direction) + 4) // 2
         matrix_list = [0.] * 4
-        matrix_list[index_val] = 1.
+        matrix_list[index_num] = 1.
         for attr_name, matrix_val in zip(("x1", "y1", "x2", "y2"), matrix_list):
             self.set_attr_val(attr_name, matrix_val)
+        return self
+
+    def add_stop_color(self, offset, stop_color, stop_opacity):
+        stop_color = Stop(offset, stop_color, stop_opacity)
+        self.append(stop_color)
+        return self
+
+    def add_begin_color(self, color, opacity):
+        self.add_stop_color(0., color, opacity)
+        return self
+
+    def add_end_color(self, color, opacity):
+        self.add_stop_color(1., color, opacity)
 

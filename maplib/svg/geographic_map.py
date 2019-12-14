@@ -1,125 +1,143 @@
-import numpy as np
-
 import maplib.constants as consts
+import maplib.parameters as params
 
-from maplib.svg.geography import Geography
-from maplib.svg.geography import Island
-from maplib.svg.geography import Lake
-from maplib.svg.geography import Land
-from maplib.svg.geography import River
-from maplib.svg.geography import RoundLake
-from maplib.tools.position import position
-from maplib.tools.position import position_list
-
-
-class Shanghai(Land):
-    def __init__(self):
-        control_points = position_list(
-            [260, 300],
-            [380, 180],
-            [380, 18],
-            [362, 0],
-        )
-        Land.__init__(self, "Shanghai", control_points, [consts.LD, consts.LU])
+from maplib.svg.path_types import LPath
+from maplib.svg.path_types import OPath
+from maplib.svg.path_types import YPath
+from maplib.svg.svg_element import Circle
+from maplib.svg.svg_element import Group
+from maplib.tools.assertions import assert_length
+from maplib.tools.config_ops import digest_locals
+from maplib.tools.numpy_type_tools import np_float
+from maplib.tools.space_ops import rotate
+from maplib.tools.space_ops import unify_vector
 
 
-class ChongmingIsland(Land):
-    def __init__(self):
-        control_points = position_list(
-            [332, 300],
-            [364, 268],
-            [400, 268],
-        )
-        Land.__init__(self, "Chongming_Island", control_points, [consts.RU])
+class Land(LPath):
+    attrs_needed = 2
+    has_branch = True
+    group_name = "land_group"
+
+    def __init__(self, id_name, arc_radius, control_points, corner_control_points):
+        LPath.__init__(self, id_name, control_points, arc_radius)
+        for corner_control_point in corner_control_points:
+            self.line_to(corner_control_point)
+        self.close_path()
+        self.finish_path()
 
 
-class ChangxingIsland(Land):
-    def __init__(self):
-        control_points = position_list(
-            [283, 300],
-            [351, 232],
-            [362, 232],
-            [362, 247],
-            [309, 300],
-        )
-        Land.__init__(self, "Changxing_Island", control_points)
+class Island(OPath):
+    attrs_needed = 2
+    has_branch = False
+    group_name = "land_group"
+
+    def __init__(self, id_name, arc_radius, control_points):
+        OPath.__init__(self, id_name, control_points, arc_radius)
 
 
-class HengshaIsland(Island):
-    def __init__(self):
-        control_points = position_list(
-            [368, 242],
-            [368, 220],
-            [386, 220],
-            [386, 242],
-        )
-        Island.__init__(self, "Hengsha_Island", control_points)
+class River(YPath):
+    attrs_needed = 3
+    has_branch = False
+    group_name = "river_group"
+
+    def __init__(self, id_name, arc_radius, river_width, control_points):
+        digest_locals(self)
+        main_control_points, sub_control_points = self.compute_river_control_points()
+        YPath.__init__(self, id_name, main_control_points, sub_control_points, arc_radius)
+        self.set_style({
+            "stroke-width": river_width,
+        })
+
+    def compute_river_control_points(self):
+        last_given_point = self.control_points[-1]
+        unit_vector = unify_vector(last_given_point - self.control_points[-2])
+        middle_point = last_given_point + self.river_width * unit_vector / 2
+        former_point = middle_point - self.arc_radius * unit_vector
+        last_right_point = rotate(former_point, consts.PI / 2, middle_point)
+        last_left_point = rotate(former_point, -consts.PI / 2, middle_point)
+        main_control_points = self.control_points[:-1]
+        main_control_points.extend([middle_point, last_right_point])
+        sub_control_points = [former_point, middle_point, last_left_point]
+        return main_control_points, sub_control_points
 
 
-class HuangpuRiver(River):
-    def __init__(self):
-        control_points = position_list(
-            [0, 95],
-            [18, 95],
-            [58, 55],
-            [162, 55],
-            [162, 70],
-            [173, 81],
-            [173, 114],
-            [185, 126],
-            [185, 141],
-            [194, 150],
-            [215, 150],
-            [221, 156],
-            [221, 186],
-            [282, 186],
-            [282, 244],
-            [248, 278],
-            [265, 295],
-        )
-        River.__init__(self, "Huangpu_River", control_points)
+class Lake(Land):
+    group_name = "lake_group"
 
 
-class SuzhouCreek(River):
-    def __init__(self):
-        control_points = position_list(
-            [0, 246],
-            [64, 246],
-            [110, 200],
-            [158, 200],
-            [165, 207],
-            [187, 207],
-            [187, 197],
-            [230, 197],
-            [230, 188.5],
-        )
-        River.__init__(self, "Suzhou_Creek", control_points)
+class InnerLake(Island):
+    group_name = "lake_group"
 
 
-class DianshanLake(Lake):
-    def __init__(self):
-        control_points = position_list(
-            [0, 186],
-            [12, 186],
-            [12, 164],
-            [0, 152],
-        )
-        Lake.__init__(self, "Dianshan_Lake", control_points)
+class GeographicMap(Group):
+    def __init__(self, id_name, geometry_data_dict):
+        Group.__init__(self, id_name)
+        self.geometry_data_dict = geometry_data_dict
+        self.add_background_rect()
+        self.init_groups()
+        self.add_components()
 
+    def add_background_rect(self):
+        self.use_with_style("frame_rect", {
+            "fill": params.WATER_AREA_COLOR,
+        }, -params.MAIN_MAP_SHIFT_VECTOR)
+        return self
 
-class DishuiLake(RoundLake):
-    def __init__(self):
-        RoundLake.__init__(self, "Dishui_Lake", 5.0, position(370, 26))
+    def init_groups(self):
+        land_group = Group("land")
+        land_group.set_style({
+            "fill": params.LAND_COLOR,
+        })
+        river_group = Group("river")
+        river_group.set_style({
+            "fill": None,
+            "stroke": params.WATER_AREA_COLOR,
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+        })
+        lake_group = Group("lake")
+        lake_group.set_style({
+            "fill": params.WATER_AREA_COLOR,
+        })
+        digest_locals(self)
+        self.append(land_group)
+        self.append(river_group)
+        self.append(lake_group)
+        return self
 
-
-class GeograpicMap(Geography):
     def add_components(self):
-        self.land_group.append(Shanghai())
-        self.land_group.append(ChongmingIsland())
-        self.land_group.append(ChangxingIsland())
-        self.land_group.append(HengshaIsland())
-        self.river_group.append(HuangpuRiver())
-        self.river_group.append(SuzhouCreek())
-        self.lake_group.append(DianshanLake())
-        self.lake_group.append(DishuiLake())
+        for obj_type, obj_list in self.geometry_data_dict.items():
+            ClassType = eval(obj_type)
+            for basic_data, detailed_data in obj_list:
+                assert_length(basic_data, ClassType.attrs_needed)
+                if ClassType.has_branch:
+                    obj = self.get_component_with_branch(ClassType, basic_data, detailed_data)
+                else:
+                    obj = self.get_component(ClassType, basic_data, detailed_data)
+                group = self.__getattribute__(ClassType.group_name)
+                group.append(obj)
+        return self
+
+    def get_component_with_branch(self, ClassName, basic_data, detailed_data):
+        signs = []
+        coords = []
+        for single_point_data in detailed_data:
+            sign, x_coord, y_coord = single_point_data
+            coord = np_float(x_coord, y_coord)
+            signs.append(sign)
+            coords.append(coord)
+        branch_index = signs.index("#") + 1
+        control_points = coords[:branch_index]
+        corner_control_points = coords[branch_index:]
+        obj = ClassName(*basic_data, control_points, corner_control_points)
+        return obj
+
+    def get_component(self, ClassName, basic_data, detailed_data):
+        control_points = []
+        for single_point_data in detailed_data:
+            x_coord, y_coord = single_point_data
+            coord = np_float(x_coord, y_coord)
+            control_points.append(coord)
+        obj = ClassName(*basic_data, control_points)
+        return obj
 

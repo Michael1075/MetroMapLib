@@ -28,16 +28,16 @@ def sort_dict_by_key(dict_obj):
 def get_first_item(vals):
     result_list = [val for val in vals if val is not None]
     result_set = set(result_list)
-    if len(result_set) != 1:
-        raise ValueError(result_set)
-    return result_list[0]
+    result = result_set.pop()
+    assert not result_set, ValueError(result_list)
+    return result
 
 
 def shrink_value(value, val1, val2):
     """
     Return a value in [val1, val2).
     """
-    assert val1 < val2
+    assert val1 < val2, ValueError((val1, val2))
     result = (value - val1) % (val2 - val1) + val1
     return result
 

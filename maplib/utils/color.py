@@ -1,6 +1,6 @@
 class Color(object):
     def __init__(self, *rgb):
-        assert all([val in range(256) for val in rgb])
+        assert all([val in range(256) for val in rgb]), ValueError(rgb)
         self.rgb = rgb
 
     def __eq__(self, obj):

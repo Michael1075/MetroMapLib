@@ -7,6 +7,7 @@ from maplib.svg.svg_element import Group
 from maplib.svg.tex import Tex
 from maplib.svg.tex import TexBox
 from maplib.svg.tex import TexGroup
+from maplib.tools.config_ops import digest_locals
 from maplib.tools.space_ops import get_simplified_direction
 from maplib.utils.color import Color
 
@@ -14,10 +15,10 @@ from maplib.utils.color import Color
 class TexNameTemplate(Group):
     body_group_id_name = None
 
-    def __init__(self, id_name, objs):
+    def __init__(self, id_name, objs, tex_style):
+        digest_locals(self)
         Group.__init__(self, id_name)
         self.flip_y()
-        self.objs = objs
         if "shadow" in self.tex_style.keys():
             self.add_shadow_tex()
         self.add_body_tex()
@@ -97,8 +98,10 @@ class TexNameTemplate(Group):
 
 
 class StationName(TexNameTemplate):
-    tex_style = params.STATION_NAME_TEX_STYLE
     body_group_id_name = "station_name_body"
+
+    def __init__(self, id_name, objs):
+        TexNameTemplate.__init__(self, id_name, objs, params.STATION_NAME_TEX_STYLE)
 
     def get_aligning_information(self, station):
         align_buffs = [self.tex_style[key] for key in ("big_buff", "small_buff")]
@@ -109,14 +112,11 @@ class StationName(TexNameTemplate):
         return (aligned_point, aligned_direction)
 
 
-class DistrictName(TexNameTemplate):
-    tex_style = params.DISTRICT_NAME_TEX_STYLE
+class GeographicName(Group):
+    def __init__(self, id_name, name_objs_dict):
+        Group.__init__(self, id_name)
+        for name_type, obj_list in name_objs_dict.items():
+            name_group = TexNameTemplate(name_type, obj_list, params.GEOGRAPHIC_NAME_TEX_STYLE[name_type])
+            self.append(name_group)
 
-
-class RiverName(TexNameTemplate):
-    tex_style = params.RIVER_NAME_TEX_STYLE
-
-
-class LakeName(TexNameTemplate):
-    tex_style = params.LAKE_NAME_TEX_STYLE
 

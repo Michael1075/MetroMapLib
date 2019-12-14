@@ -1,16 +1,17 @@
 import numpy as np
 
+from maplib.tools.numpy_type_tools import np_float
 from maplib.utils.color import Color
 
 
 NAN = np.nan
 PI = np.pi
 
-ORIGIN = np.array([0., 0.])
-RIGHT = np.array([1., 0.])
-UP = np.array([0., 1.])
-LEFT = np.array([-1., 0.])
-DOWN = np.array([0., -1.])
+ORIGIN = np_float(0, 0)
+RIGHT = np_float(1, 0)
+UP = np_float(0, 1)
+LEFT = np_float(-1, 0)
+DOWN = np_float(0, -1)
 RU = RIGHT + UP
 LU = LEFT + UP
 LD = LEFT + DOWN

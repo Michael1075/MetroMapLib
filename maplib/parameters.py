@@ -3,17 +3,20 @@ import os
 
 import maplib.constants as consts
 
-from maplib.tools.position import position
+from maplib.tools.numpy_type_tools import np_float
 from maplib.utils.color import Color
 
 
 # dirs
 THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 FILE_DIR = os.path.join(THIS_DIR, "files")
-INPUT_FILE_DIR = os.path.join(FILE_DIR, "input_files", "input.xlsx")
-OUTPUT_FILE_DIR = os.path.join(FILE_DIR, "output_files", "output.svg")
+INPUT_FILES_FOLDER_DIR = os.path.join(FILE_DIR, "input_files")
+OUTPUT_FILES_FOLDER_DIR = os.path.join(FILE_DIR, "output_files")
 TEX_DIR = os.path.join(FILE_DIR, "tex")
 JSON_DIR = os.path.join(FILE_DIR, "json")
+METRO_INPUT_FILE_DIR = os.path.join(INPUT_FILES_FOLDER_DIR, "metro_input.xlsx")
+GEOGRAPHY_INPUT_FILE_DIR = os.path.join(INPUT_FILES_FOLDER_DIR, "geography_input.xlsx")
+OUTPUT_FILE_DIR = os.path.join(OUTPUT_FILES_FOLDER_DIR, "output.svg")
 
 # tex base
 TEMPLATE_TEX_FILE = os.path.join(THIS_DIR, "tex_template.tex")
@@ -22,11 +25,11 @@ with open(TEMPLATE_TEX_FILE, "r") as input_file:
 TEX_TO_REPLACE = "YourTextHere"
 
 # json base
-JSON_TEX_FILE_DIR = os.path.join(JSON_DIR, "tex_file.json")
-JSON_TEX_PATH_DIR = os.path.join(JSON_DIR, "tex_path.json")
-with open(JSON_TEX_FILE_DIR, "r") as output_file:
+JSON_TEX_FILE_DEFAULT_DIR = os.path.join(JSON_DIR, "tex_file.json")
+JSON_TEX_PATH_DEFAULT_DIR = os.path.join(JSON_DIR, "tex_path.json")
+with open(JSON_TEX_FILE_DEFAULT_DIR, "r") as output_file:
     GLOBAL_FILE_DICT = json.load(output_file)
-with open(JSON_TEX_PATH_DIR, "r") as output_file:
+with open(JSON_TEX_PATH_DEFAULT_DIR, "r") as output_file:
     GLOBAL_PATH_DICT = json.load(output_file)
 
 # svg base
@@ -41,43 +44,41 @@ SVG_HEAD = "".join([
 # base settings
 DECIMAL_DIGITS = 6
 TOLERANCE = 1e-8
+PRINT_TEX_WRITING_PROGRESS_MSG = True
+PRINT_SVG_MODIFYING_MSG = True
+PRINT_TIMER_MSG = True
 
 # size
-WIDTH = 400.0
-HEIGHT = 300.0
-SIZE = position(WIDTH, HEIGHT)
+FULL_WIDTH = 490.0
+FULL_HEIGHT = 400.0
+FULL_SIZE = np_float(FULL_WIDTH, FULL_HEIGHT)
+FRAME_WIDTH = 450.0
+FRAME_HEIGHT = 320.0
+FRAME_SIZE = np_float(FRAME_WIDTH, FRAME_HEIGHT)
+
+# composition
+MAIN_FRAME_SHIFT_VECTOR = np_float(20.0, 40.0)
+MAIN_MAP_SHIFT_VECTOR = np_float(20.0, 0.0)
+GRADIENT_WIDTH = 20.0
+GRADIENT_HEIGHT = 20.0
+MAIN_COLOR = consts.WHITE
 
 # mask
 MASK_BASE_COLOR = consts.WHITE
 MASK_COLOR = consts.BLACK
+GRADIENT_MASK_COLOR = consts.WHITE
 
 # tex
 TEX_FONT_CMDS_CHN = ("songti", "heiti", "lishu", "youyuan")
 TEX_FONT_CMDS_ENG = ("rmfamily", "sffamily")
 TEX_FONT_CMDS = TEX_FONT_CMDS_CHN + TEX_FONT_CMDS_ENG
 TEX_BASE_SCALE_FACTOR = 0.07
-PRINT_TEX_WRITING_PROGRESS = True
 
 # grid
 GRID_STEP = 50.0
 GRID_STROKE_WIDTH = 0.3
 GRID_STROKE_OPACITY = 0.15
 GRID_COLOR = Color(180, 180, 180)
-
-# geography
-COASTLINE_ARC_RADIUS = 6.0
-RIVER_ARC_RADIUS_DICT = {
-    "Huangpu_River": 6.0,
-    "Suzhou_Creek": 2.4,
-}
-RIVER_WIDTH_DICT = {
-    "Huangpu_River": 5.0,
-    "Suzhou_Creek": 2.0,
-}
-LAND_COLOR = consts.WHITE
-WATER_AREA_COLOR = Color(217, 235, 247)
-
-# web system
 
 # route
 ROUTE_ARC_RADIUS = 2.0
@@ -89,7 +90,7 @@ ROUTE_STROKE_OPACITY = 0.7
 STATION_POINT_RADIUS = 0.4
 STATION_POINT_FILL_OPACITY = 1.0
 
-#station frame
+# station frame
 FRAME_RADIUS_DICT = {
     "normal": 0.4,
     "interchange": 0.55
@@ -101,6 +102,18 @@ FRAME_STROKE_WIDTH_DICT = {
 FRAME_STROKE_OPACITY = 0.9
 FRAME_FILL_COLOR = consts.WHITE
 INTERCHANGE_STATION_FRAME_STROKE_COLOR = consts.BLACK
+
+# geography
+LAND_COLOR = consts.WHITE
+WATER_AREA_COLOR = Color(217, 235, 247)
+
+# svg paths
+METRO_LOGO_INFO = {
+    "svg_dir": os.path.join(INPUT_FILES_FOLDER_DIR, "shanghai_metro_logo.svg"),
+    "scale_factor": 15.0,
+    "aligned_point": np_float(20, 380),
+    "color": Color(215, 5, 8)
+}
 
 # tex style
 STATION_NAME_TEX_STYLE = {
@@ -126,47 +139,45 @@ STATION_NAME_TEX_STYLE = {
         "opacity": 0.7,
     },
 }
-DISTRICT_NAME_TEX_STYLE = {
-    "tex_box_format": consts.VERTICAL,
-    "tex_buff": -0.2,
-    "scale_factor": {
-        "chn": 2.5,
-        "eng": 1.4,
+GEOGRAPHIC_NAME_TEX_STYLE = {
+    "district_name": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": -0.2,
+        "scale_factor": {
+            "chn": 2.5,
+            "eng": 1.4,
+        },
+        "font_cmd": {
+            "chn": "songti",
+            "eng": "rmfamily",
+        },
+        "color": Color(120, 120, 120),
     },
-    "font_cmd": {
-        "chn": "songti",
-        "eng": "rmfamily",
+    "river_name": {
+        "tex_box_format": consts.HORIZONTAL,
+        "tex_buff": 1.0,
+        "scale_factor": {
+            "chn": 2.0,
+            "eng": 2.0,
+        },
+        "font_cmd": {
+            "chn": "songti",
+            "eng": "rmfamily",
+        },
+        "color": Color(93, 188, 218),
     },
-    "color": Color(120, 120, 120),
+    "lake_name": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": -0.2,
+        "scale_factor": {
+            "chn": 2.2,
+            "eng": 1.4,
+        },
+        "font_cmd": {
+            "chn": "songti",
+            "eng": "rmfamily",
+        },
+        "color": Color(93, 188, 218),
+    },
 }
-WATER_AREA_NAME_TEX_STYLE = {
-    "font_cmd": {
-        "chn": "songti",
-        "eng": "rmfamily",
-    },
-    "color": Color(93, 188, 218),
-}
-RIVER_NAME_TEX_STYLE = {
-    "tex_box_format": consts.HORIZONTAL,
-    "tex_buff": 1.0,
-    "scale_factor": {
-        "chn": 2.0,
-        "eng": 2.0,
-    },
-}
-RIVER_NAME_TEX_STYLE.update(WATER_AREA_NAME_TEX_STYLE)
-LAKE_NAME_TEX_STYLE = {
-    "tex_box_format": consts.VERTICAL,
-    "tex_buff": -0.2,
-    "scale_factor": {
-        "chn": 2.2,
-        "eng": 1.4,
-    },
-}
-LAKE_NAME_TEX_STYLE.update(WATER_AREA_NAME_TEX_STYLE)
-
-# metro logo
-METRO_LOGO_COLOR = Color(215, 5, 8)
-METRO_LOGO_SIZE = 15.0
-METRO_LOGO_ALIGNED_POINT = position(20.0, 280.0)
 

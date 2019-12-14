@@ -10,7 +10,6 @@ MetroMapLib runs on python 3.6. System requirements are just LaTeX. Other packag
 ```sh
 # Default packages required
 concurrent
-copy
 functools
 hashlib
 inspect

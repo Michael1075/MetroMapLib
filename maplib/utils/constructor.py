@@ -1,13 +1,9 @@
-import copy
-
 import maplib.constants as consts
 
+from maplib.tools.sheet_tools import get_workbook_data_dict
 from maplib.tools.simple_functions import get_first_item
 from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import center_of_mass
-from maplib.tools.table_tools import get_row_val
-from maplib.tools.table_tools import get_table_val
-from maplib.tools.table_tools import open_xlsx_file
 from maplib.utils.color import Color
 from maplib.utils.models import Metro
 from maplib.utils.models import SimpleNameModel
@@ -15,27 +11,25 @@ from maplib.utils.models import Station
 
 
 class Constructor(object):
-    def __init__(self, file_name):
-        self.database = open_xlsx_file(file_name)
+    def __init__(self, metro_file_name, geography_file_name):
+        self.metro_database_dict = get_workbook_data_dict(metro_file_name, child_sheet_max_column = 7)
+        self.geography_database_dict = get_workbook_data_dict(geography_file_name, ignore_none = True)
         self.build_metros()
         self.build_stations()
-        self.build_other_stuff()
+        self.build_name_obj()
+        self.build_geometry_data()
 
     def build_metros(self):
         self.metro_objs = []
         self.all_stations_data_dict = dict()
-        main_sheet = self.database["main"]
-        num_metros = main_sheet.max_row
-        for k in range(num_metros):
-            metro_basic_data = get_row_val(main_sheet, row_index = k, max_column = 6)
-            metro_name, metro_name_chn, metro_serial_num, \
-                main_color_str, sub_color_str, route_type = metro_basic_data
+        for metro_name, metro_data in self.metro_database_dict.items():
+            metro_basic_data, metro_stations_data = metro_data
+            metro_name_chn, metro_serial_num, main_color_str, sub_color_str, route_type = metro_basic_data
             main_color = Color(*string_to_nums(main_color_str))
             if sub_color_str is not None and sub_color_str != "None":
                 sub_color = Color(*string_to_nums(sub_color_str))
             else:
                 sub_color = sub_color_str
-            metro_stations_data = get_table_val(self.database[metro_name], max_column = 7)
             metro = Metro(
                 metro_serial_num,
                 metro_name,
@@ -67,14 +61,13 @@ class Constructor(object):
         elif max(x) == min(x):
             station_direction = consts.VERTICAL
         else:
-            raise AssertionError
+            raise ValueError(adjacent_coord_list)
         center_point = center_of_mass(adjacent_coord_list)
         station_data = [self.all_stations_data_dict[coord] for coord in adjacent_coord_list]
-        colors, sub_colors, station_names_eng, station_names_chn, label_simple_directions = zip(*station_data)
+        parent_metros, station_names_eng, station_names_chn, label_simple_directions = zip(*station_data)
         station = Station(
             center_point,
-            colors,
-            sub_colors,
+            parent_metros,
             station_direction,
             get_first_item(station_names_eng),
             get_first_item(station_names_chn),
@@ -87,7 +80,7 @@ class Constructor(object):
         old_adjacent_coord_set = set()
         new_adjacent_coord_set = {station_coord_tuple}
         while len(new_adjacent_coord_set - old_adjacent_coord_set) != 0:
-            old_adjacent_coord_set = copy.copy(new_adjacent_coord_set)
+            old_adjacent_coord_set = new_adjacent_coord_set.copy()
             for coord in list(old_adjacent_coord_set):
                 for direction in consts.FOUR_BASE_DIRECTIONS:
                     extended_coord_tuple = tuple(coord + direction)
@@ -95,23 +88,28 @@ class Constructor(object):
                         new_adjacent_coord_set.add(extended_coord_tuple)
         return new_adjacent_coord_set
 
-    def build_obj(self, obj_name, table_name, max_column, ModelClass):
-        obj_list = []
-        sheet = self.database[table_name]
-        data = get_table_val(sheet, max_column = max_column)
-        for district_name_data in data:
-            obj = ModelClass(*district_name_data)
-            obj_list.append(obj)
-        self.__setattr__(obj_name, obj_list)
+    def build_name_obj(self):
+        self.name_objs_dict = dict()
+        for name_type, data in self.geography_database_dict.items():
+            name_type = name_type.replace(" ", "_")
+            basic_data, detailed_data = data
+            if basic_data[0] == "name":
+                obj_list = []
+                for component_data in detailed_data:
+                    obj = SimpleNameModel(*component_data)
+                    obj_list.append(obj)
+                self.name_objs_dict[name_type] = obj_list
         return self
 
-    def build_simple_obj(self, obj_name, table_name):
-        self.build_obj(obj_name, table_name, 4, SimpleNameModel)
-        return self
-
-    def build_other_stuff(self):
-        self.build_simple_obj("district_name_objs", "district name")
-        self.build_simple_obj("river_name_objs", "river name")
-        self.build_simple_obj("lake_name_objs", "lake name")
+    def build_geometry_data(self):
+        geometry_obj_types = ("Land", "Island", "River", "Lake", "InnerLake")
+        self.geometry_data_dict = {obj_type: [] for obj_type in geometry_obj_types}
+        for obj_name, data in self.geography_database_dict.items():
+            basic_data, detailed_data = data
+            obj_type = basic_data[0]
+            if obj_type in geometry_obj_types:
+                rest_basic_data = [float(val) for val in basic_data[1:]]
+                rest_basic_data.insert(0, obj_name)
+                self.geometry_data_dict[obj_type].append((rest_basic_data, detailed_data))
         return self
 

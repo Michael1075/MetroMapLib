@@ -11,16 +11,8 @@ from maplib.tools.space_ops import get_simplified_direction
 def assert_true_or_raise(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        if result is not True:
-            raise ValueError(func.__name__ + " " + str(np_to_tuple(result)))
+        assert result is True, ValueError(func.__name__ + " " + str(np_to_tuple(result)))
     return wrapper
-
-
-def is_number(data, float_sensitive = True):
-    # Note, np.float64 is a subclass of float.
-    if float_sensitive:
-        return isinstance(data, float)
-    return isinstance(data, (int, float, np.int32, np.int64, np.float32))
 
 
 def is_np_data(data, required_dtype = np.float64, required_shape = None):
@@ -40,11 +32,12 @@ def is_np_data(data, required_dtype = np.float64, required_shape = None):
     return False
 
 
-@assert_true_or_raise
-def assert_is_number(val):
-    if not is_number(val):
-        return val
-    return True
+def assert_type(val, valid_type):
+    assert isinstance(val, valid_type), TypeError(val)
+
+
+def assert_length(vals, valid_length):
+    assert len(vals) == valid_length, ValueError(vals)
 
 
 @assert_true_or_raise

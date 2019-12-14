@@ -1,6 +1,5 @@
 from functools import reduce
 from xml.dom import minidom
-import copy
 import hashlib
 import numpy as np
 import operator as op
@@ -10,10 +9,11 @@ import maplib.constants as consts
 import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
+from maplib.tools.assertions import assert_type
 from maplib.tools.config_ops import digest_locals
 from maplib.tools.file_tools import get_global_file_dict
 from maplib.tools.file_tools import get_global_path_dict
-from maplib.tools.position import position
+from maplib.tools.numpy_type_tools import np_float
 from maplib.tools.simple_functions import get_path_id_name
 from maplib.tools.simple_functions import get_path_id_num_str
 from maplib.tools.space_ops import get_positive_direction
@@ -41,7 +41,7 @@ class TexFileWriter(object):
     
     def generate_tex_file(self, svg_file_name):
         result = svg_file_name.replace(".svg", ".tex")
-        if params.PRINT_TEX_WRITING_PROGRESS:
+        if params.PRINT_TEX_WRITING_PROGRESS_MSG:
             print("Writing \"{0}\" to {1}".format(self.tex_string, str(self)))
         with open(result, "w", encoding = "utf-8") as outfile:
             outfile.write(self.new_body)
@@ -61,8 +61,7 @@ class TexFileWriter(object):
             os.devnull
         ]
         exit_code = os.system(" ".join(commands))
-        if exit_code != 0:
-            raise OSError
+        assert exit_code == 0, OSError
         return result
     
     def dvi_to_svg(self, dvi_file):
@@ -175,7 +174,7 @@ class Tex(Alignable, TexFileWriter):
             href_id_name = get_path_id_name(path_id_num, self.font_type)
             path_string = self.tex_path_dict[path_id_num]
             tex_paths_cmd_dict[href_id_name] = path_string
-            relative_coord = position(x, y)
+            relative_coord = np_float(x, y)
             tex_uses_list.append((href_id_name, relative_coord))
         digest_locals(self, ("viewbox_list", "tex_paths_cmd_dict", "tex_uses_list"))
         return self
@@ -185,21 +184,22 @@ class Tex(Alignable, TexFileWriter):
         width = self.viewbox_list[2] * scale_factor
         height = self.viewbox_list[3] * scale_factor
         digest_locals(self)
-        self.set_box_size(position(width, height))
+        self.set_box_size(np_float(width, height))
         return self
 
     def compute_shift_vector(self, aligned_point, aligned_direction):
         self.align(aligned_point, aligned_direction)
         x_min, y_min = self.viewbox_list[:2]
         x_prime, y_prime = self.get_critical_point(consts.LD)
-        y_prime = params.HEIGHT - self.height - y_prime
+        y_prime = params.FULL_HEIGHT - self.height - y_prime
         return (x_prime - x_min * self.scale_factor, y_prime - y_min * self.scale_factor)
         
 
 class TexBox(Alignable):
     def __init__(self, tex_objs, aligned_point, aligned_direction, buff, box_format):
-        assert all([isinstance(tex_obj, Tex) for tex_obj in tex_objs])
-        self.tex_objs = copy.copy(tex_objs)
+        for tex_obj in tex_objs:
+            assert_type(tex_obj, Tex)
+        self.tex_objs = tex_objs.copy()
         if box_format == consts.VERTICAL:
             tex_objs.reverse()
         positive_direction = get_positive_direction(box_format)

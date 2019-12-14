@@ -1,5 +1,7 @@
 import time
 
+import maplib.parameters as params
+
 
 def timer_decorator(decorator_func = None):
     def decorator(func):
@@ -18,7 +20,8 @@ def timer_decorator(decorator_func = None):
             result = new_func(*args, **kwargs)
             end = time.time()
             msg = "Consumed time of function {0}: {1:.3f} second(s)"
-            print(msg.format(func_name, end - begin))
+            if params.PRINT_TIMER_MSG:
+                print(msg.format(func_name, end - begin))
             return result
         return wrapper
     return decorator

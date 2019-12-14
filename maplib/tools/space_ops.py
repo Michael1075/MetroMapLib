@@ -140,15 +140,20 @@ def get_simplified_angle(a, b, c):
 
 
 def num_to_base_direction(num):
-    if num is None:
+    if num not in range(8):
         return
     return consts.EIGHT_BASE_DIRECTIONS[num]
 
 
-def get_positive_direction(direction):
-    if direction == consts.HORIZONTAL:
+def get_positive_direction(h_or_v):
+    if h_or_v == consts.HORIZONTAL:
         return consts.RIGHT
-    if direction == consts.VERTICAL:
+    if h_or_v == consts.VERTICAL:
         return consts.UP
-    raise ValueError(direction)
+    raise ValueError(h_or_v)
+
+
+def is_horizontal(direction):
+    direction_num = shrink_value(get_simplified_direction(direction) // 2, 0, 2)
+    return [True, False][direction_num]
 

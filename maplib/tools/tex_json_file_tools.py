@@ -1,6 +1,5 @@
 from functools import reduce
 import concurrent.futures as ft
-import copy
 import json
 import operator as op
 import os
@@ -8,7 +7,6 @@ import os
 import maplib.parameters as params
 
 from maplib.svg.tex import TexFileWriter
-from maplib.tools.file_tools import cut_off_extension
 from maplib.tools.file_tools import get_global_tex_dicts
 from maplib.tools.simple_functions import remove_list_redundancies
 from maplib.tools.time_ops import timer_decorator
@@ -18,9 +16,9 @@ def dump_dicts(global_file_dict, global_path_dict):
     """
     Be careful that his function can cover json data.
     """
-    with open(params.JSON_TEX_FILE_DIR, "w") as output_file:
+    with open(params.JSON_TEX_FILE_DEFAULT_DIR, "w") as output_file:
         dump_json(global_file_dict, output_file)
-    with open(params.JSON_TEX_PATH_DIR, "w") as output_file:
+    with open(params.JSON_TEX_PATH_DEFAULT_DIR, "w") as output_file:
         dump_json(global_path_dict, output_file)
 
 
@@ -28,44 +26,19 @@ def dump_json(obj, file_name):
     return json.dump(obj, file_name, indent = 0, sort_keys = True)
 
 
-def get_single_tex(tex_obj, generate_file, use_current_data):
-    msg_list = [str(tex_obj), tex_obj.tex_string, "-"]
-    result = tex_obj.get_dict_if_existed(use_current_data)
-    if generate_file:
-        if result is None:
-            result_info = "Successfully generated"
-            tex_obj.write_tex_file(result)
-        else:
-            result_info = "Already existed"
-            tex_obj = None
-    else:
-        if result is not None:
-            result_info = "Successfully removed"
-        else:
-            result_info = "Does not exist"
-            tex_obj = None
-    msg_list.append(result_info)
-    print(" ".join(msg_list))
-    return tex_obj
-
-
 def generate_tex_in_json(generated_tex_objs, global_file_dict, global_path_dict):
-    global_file_dict_copy = copy.copy(global_file_dict)
-    global_path_dict_copy = copy.copy(global_path_dict)
     for tex_obj in generated_tex_objs:
-        global_file_dict_copy[tex_obj.font_type][str(tex_obj)] = tex_obj.tex_file_dict
-        global_path_dict_copy[tex_obj.font_type].update(tex_obj.tex_path_dict)
-    return (global_file_dict_copy, global_path_dict_copy)
+        global_file_dict[tex_obj.font_type][str(tex_obj)] = tex_obj.tex_file_dict
+        global_path_dict[tex_obj.font_type].update(tex_obj.tex_path_dict)
+    return (global_file_dict, global_path_dict)
 
 
 def remove_tex_in_json(removed_tex_objs, global_file_dict, global_path_dict):
-    global_file_dict_copy = copy.copy(global_file_dict)
-    global_path_dict_copy = copy.copy(global_path_dict)
     removed_tex_hash_vals = [str(tex_obj) for tex_obj in removed_tex_objs]
     for tex_obj in removed_tex_objs:
-        global_file_dict_copy[tex_obj.font_type].pop(str(tex_obj))
+        global_file_dict[tex_obj.font_type].pop(str(tex_obj))
         # Get difference_set to remove path precisely.
-        font_file_dict = global_file_dict_copy[tex_obj.font_type]
+        font_file_dict = global_file_dict[tex_obj.font_type]
         old_sets = [
             set(tex_file_dict["h"])
             for tex_file_dict in font_file_dict.values()
@@ -79,8 +52,8 @@ def remove_tex_in_json(removed_tex_objs, global_file_dict, global_path_dict):
         new_path_num_set = reduce(op.or_, new_sets)
         difference_set = old_path_num_set - new_path_num_set
         for path_num in difference_set:
-            global_path_dict_copy[tex_obj.font_type].pop(path_num)
-    return (global_file_dict_copy, global_path_dict_copy)
+            global_path_dict[tex_obj.font_type].pop(path_num)
+    return (global_file_dict, global_path_dict)
 
 
 def update_generated_tex_in_json(generated_tex_objs):
@@ -115,6 +88,8 @@ def init_json():
         dict_val: path_string (str)
     * Note, the dict_key in json file should only be a str.
     """
+    if params.PRINT_SVG_MODIFYING_MSG:
+        print("Initializing json...")
     global_file_dict, global_path_dict = get_global_tex_dicts()
     new_global_file_dict = dict()
     for tex_font, font_file_dict in global_file_dict.items():
@@ -143,14 +118,42 @@ def init_json():
 
 
 def create_transcript(file_name_suffix):
-    for old_file_name in (params.JSON_TEX_FILE_DIR, params.JSON_TEX_PATH_DIR):
-        new_file_name = cut_off_extension(old_file_name) + file_name_suffix + ".json"
+    if params.PRINT_SVG_MODIFYING_MSG:
+        print("Copying json...")
+    for old_file_name in (params.JSON_TEX_FILE_DEFAULT_DIR, params.JSON_TEX_PATH_DEFAULT_DIR):
+        new_file_name = old_file_name.replace(".json", file_name_suffix + ".json")
         commands = [
             "copy",
             old_file_name,
-            new_file_name
+            new_file_name,
+            ">",
+            os.devnull
         ]
         os.system(" ".join(commands))
+        if params.PRINT_SVG_MODIFYING_MSG:
+            print("Copied to " + new_file_name)
+
+
+def get_single_tex(tex_obj, generate_file, use_current_data):
+    msg_list = [str(tex_obj), tex_obj.tex_string, "-"]
+    result = tex_obj.get_dict_if_existed(use_current_data)
+    if generate_file:
+        if result is None:
+            result_info = "Successfully generated"
+            tex_obj.write_tex_file(result)
+        else:
+            result_info = "Already existed"
+            tex_obj = None
+    else:
+        if result is not None:
+            result_info = "Successfully removed"
+        else:
+            result_info = "Does not exist"
+            tex_obj = None
+    msg_list.append(result_info)
+    if params.PRINT_SVG_MODIFYING_MSG:
+        print(" ".join(msg_list))
+    return tex_obj
 
 
 @timer_decorator()
@@ -170,8 +173,8 @@ def modify_tex(*string_tuples):
         return
     generated_tex_objs, removed_tex_objs = string_tuples_to_tex_objs(string_tuples)
     global_file_dict, global_path_dict = get_global_tex_dicts()
-    if generated_tex_objs:
-        print("Generating...")
+    if params.PRINT_SVG_MODIFYING_MSG and generated_tex_objs:
+        print("Generating tex...")
     with ft.ThreadPoolExecutor() as executor:
         filtered_generated_tex_objs = [
             tex_obj for tex_obj in executor.map(
@@ -181,8 +184,8 @@ def modify_tex(*string_tuples):
     global_file_dict, global_path_dict = generate_tex_in_json(
         filtered_generated_tex_objs, global_file_dict, global_path_dict
     )
-    if removed_tex_objs:
-        print("Removing...")
+    if params.PRINT_SVG_MODIFYING_MSG and removed_tex_objs:
+        print("Removing tex...")
     filtered_removed_tex_objs = [
         tex_obj for tex_obj in map(
             lambda tex_obj: get_single_tex(tex_obj, False, global_file_dict), removed_tex_objs

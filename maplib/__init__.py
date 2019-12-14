@@ -2,18 +2,17 @@ from reportlab.graphics import renderPDF
 from reportlab.graphics import renderPM
 from svglib.svglib import svg2rlg
 
-from maplib.parameters import INPUT_FILE_DIR
-from maplib.parameters import OUTPUT_FILE_DIR
+import maplib.parameters as params
 
 from maplib.svg.main_project import Project
 from maplib.tools.file_tools import get_file_extension
 from maplib.tools.time_ops import timer_decorator
 
 
-def run_project(input_file, output_file):
+def run_project(metro_input_file, geography_input_file, output_file):
     extension = get_file_extension(output_file)
     svg_output_file = output_file.replace(extension, ".svg")
-    Project(input_file, svg_output_file)
+    Project(metro_input_file, geography_input_file, svg_output_file)
     if extension != ".svg":
         drawing = svg2rlg(svg_output_file)
         if extension == ".pdf":
@@ -24,5 +23,9 @@ def run_project(input_file, output_file):
 
 @timer_decorator()
 def main():
-    run_project(INPUT_FILE_DIR, OUTPUT_FILE_DIR)
+    run_project(
+        params.METRO_INPUT_FILE_DIR,
+        params.GEOGRAPHY_INPUT_FILE_DIR,
+        params.OUTPUT_FILE_DIR
+    )
 
