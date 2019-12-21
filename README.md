@@ -1,41 +1,52 @@
+![figure](figure.png)
+
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://choosealicense.com/licenses/mit/)
+
 # MetroMapLib
 
-MetroMapLib is a tool to config a metro map in format SVG.
-
+MetroMapLib is a tool to config a metro map in format svg.
 
 ## Requirements
 
-MetroMapLib runs on python 3.6. System requirements are just LaTeX. Other packages required are `numpy` and `openpyxl`. PDF file can also be made if packages `reportlab` and `svglib` are installed.
-
+MetroMapLib runs on python 3.7. To install python requirements, run the following:
 ```sh
-# Default packages required
-concurrent
-functools
-hashlib
-inspect
-json
-operator
-os
-re
-time
-xml
-
-# Install python requirements
 python -m pip install -r requirements.txt
-
-# Run the following in case that the network is poor
-python -m pip --default-timeout=1000 install -U -r requirements.txt
 ```
 
+**Default package requirements**
+> `concurrent`
+> `functools`
+> `hashlib`
+> `inspect`
+> `json`
+> `operator`
+> `os`
+> `re`
+> `time`
+> `xml`
+
+**Other package requirements** (Also listed in `requirements.txt`)
+> `numpy` (1.17.4)
+> `openpyxl` (3.0.2)
+
+**System requirements**
+> LaTeX
+> Google Chrome
 
 ## Using MetroMapLib
 
-Run `python main.py` under the root file.
+Before using, you may default the open mode of svg files to Google Chrome.
+
+Try running the following:
+```sh
+python main.py
+```
+
 Note, new tex files requires your GPU to run close to its full capacity by multithreading. However, if all tex are settled, the main process does not take long.
+
+The file `maplib/parameters.py` keeps all parameters of the project. You can modify some to change the style whatever you like.
+
 The file `json_tool.py` is a tool to config json files, which store path data of tex.
 
-
-## View SVG
-
-SVG is a short for Scalable Vector Graphics, which can be viewed simply in a chrome. Google Chrome is recommended.
+You can also create your own map by creating 2 excel files in the format required.
 

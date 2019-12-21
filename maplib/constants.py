@@ -22,6 +22,9 @@ EIGHT_BASE_DIRECTIONS = (RIGHT, RU, UP, LU, LEFT, LD, DOWN, RD)
 HORIZONTAL = "h"
 VERTICAL = "v"
 
+CHN = "chn"
+ENG = "eng"
+
 WHITE = Color(255, 255, 255)
 BLACK = Color(0, 0, 0)
 

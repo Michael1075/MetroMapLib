@@ -78,9 +78,9 @@ class GeographicMap(Group):
         self.add_components()
 
     def add_background_rect(self):
-        self.use_with_style("frame_rect", {
+        self.use_with_style("body_rect", {
             "fill": params.WATER_AREA_COLOR,
-        }, -params.MAIN_MAP_SHIFT_VECTOR)
+        }, -params.MAP_BODY_SHIFT_VECTOR)
         return self
 
     def init_groups(self):

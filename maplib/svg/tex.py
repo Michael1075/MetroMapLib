@@ -22,16 +22,14 @@ from maplib.utils.alignable import Alignable
 
 class TexFileWriter(object):
     def __init__(self, string, font_type):
+        assert_type(string, str)
         tex_string = "{{\\{0} {1}}}".format(font_type, string)
         new_body = params.TEMPLATE_TEX_FILE_BODY.replace(params.TEX_TO_REPLACE, tex_string)
         hash_val = self.tex_hash(new_body)
         digest_locals(self)
 
-    def __str__(self):
-        return self.hash_val
-
     def __eq__(self, obj):
-        return isinstance(obj, TexFileWriter) and str(self) == str(obj)
+        return isinstance(obj, TexFileWriter) and self.hash_val == obj.hash_val
 
     def tex_hash(self, new_body):
         hasher = hashlib.sha256()
@@ -42,7 +40,7 @@ class TexFileWriter(object):
     def generate_tex_file(self, svg_file_name):
         result = svg_file_name.replace(".svg", ".tex")
         if params.PRINT_TEX_WRITING_PROGRESS_MSG:
-            print("Writing \"{0}\" to {1}".format(self.tex_string, str(self)))
+            print(params.TEX_WRITING_PROGRESS_MSG.format(self.tex_string, self.hash_val))
         with open(result, "w", encoding = "utf-8") as outfile:
             outfile.write(self.new_body)
         return result
@@ -132,8 +130,8 @@ class TexFileWriter(object):
     def get_dict_if_existed(self, use_current_data = False):
         global_file_dict = get_global_file_dict(use_current_data)
         font_file_dict = global_file_dict[self.font_type]
-        if str(self) in font_file_dict.keys():
-            return font_file_dict[str(self)]
+        if self.hash_val in font_file_dict.keys():
+            return font_file_dict[self.hash_val]
         return None
 
     def write_tex_file(self, tex_file_dict):
@@ -142,7 +140,7 @@ class TexFileWriter(object):
             font_path_dict = global_path_dict[self.font_type]
             tex_path_dict = {key: font_path_dict[key] for key in tex_file_dict["h"]}
         else:
-            file_name_body = os.path.join(params.TEX_DIR, str(self))
+            file_name_body = os.path.join(params.TEX_CACHE_DIR, self.hash_val)
             svg_file = self.tex_to_svg(file_name_body)
             tex_file_dict, tex_path_dict = self.parse_svg_file(svg_file)
         digest_locals(self, ("tex_file_dict", "tex_path_dict"))

@@ -82,7 +82,7 @@ class Metro(object):
     """
     About input:
     serial_num: an int;
-    metro_name: a str;
+    metro_name_dict: a tuple with different languages;
     main_color: a Color obj;
     sub_color: either a Color obj, None or "None";
     route_type: a str in ("l", "o", "y");
@@ -100,7 +100,7 @@ class Metro(object):
             label_simple_direction: an integer in range(8)
         ).
     """
-    def __init__(self, serial_num, metro_name, main_color, sub_color, route_type, stations_data):
+    def __init__(self, serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data):
         route_id_name = "r" + str(serial_num)
         mask_id_name = "m" + str(serial_num)
         frame_id_name = "n" + str(serial_num)
@@ -246,7 +246,7 @@ class Metro(object):
         return self
 
     def get_normal_station_frame_radius(self):
-        return params.FRAME_RADIUS_DICT["normal"]
+        return params.BODY_RADIUS_DICT["normal"]
 
     def get_normal_station_frame(self):
         return NormalStationFrame(self)
@@ -257,7 +257,7 @@ class Metro(object):
 
 class Station(object):
     def __init__(self, center_point, parent_metros, station_direction, \
-            name_eng, name_chn, label_simple_direction):
+            station_name_dict, label_simple_direction):
         station_size = len(parent_metros)
         label_direction = num_to_base_direction(label_simple_direction)
         digest_locals(self)
@@ -265,6 +265,9 @@ class Station(object):
             self.init_normal_station()
         else:
             self.init_interchange_station()
+
+    def get_name_dict(self):
+        return self.station_name_dict
 
     def init_normal_station(self):
         is_normal = True
@@ -284,7 +287,7 @@ class Station(object):
         self.set_interchange_station_frame()
 
     def get_interchange_station_frame_radius(self):
-        return params.FRAME_RADIUS_DICT["interchange"]
+        return params.BODY_RADIUS_DICT["interchange"]
 
     def get_interchange_station_frame_box_size(self):
         radius = self.get_interchange_station_frame_radius()
@@ -316,6 +319,13 @@ class Station(object):
 
 class SimpleNameModel(object):
     def __init__(self, name_eng, name_chn, x_coord, y_coord):
+        name_dict = {
+            consts.ENG: name_eng,
+            consts.CHN: name_chn,
+        }
         center_point = np_float(x_coord, y_coord)
-        digest_locals(self, ("name_eng", "name_chn", "center_point"))
+        digest_locals(self, ("name_dict", "center_point"))
+
+    def get_name_dict(self):
+        return self.name_dict
 

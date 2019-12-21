@@ -25,6 +25,10 @@ class Constructor(object):
         for metro_name, metro_data in self.metro_database_dict.items():
             metro_basic_data, metro_stations_data = metro_data
             metro_name_chn, metro_serial_num, main_color_str, sub_color_str, route_type = metro_basic_data
+            metro_name_dict = {
+                consts.ENG: metro_name,
+                consts.CHN: metro_name_chn,
+            }
             main_color = Color(*string_to_nums(main_color_str))
             if sub_color_str is not None and sub_color_str != "None":
                 sub_color = Color(*string_to_nums(sub_color_str))
@@ -32,7 +36,7 @@ class Constructor(object):
                 sub_color = sub_color_str
             metro = Metro(
                 metro_serial_num,
-                metro_name,
+                metro_name_dict,
                 main_color,
                 sub_color,
                 route_type,
@@ -65,13 +69,17 @@ class Constructor(object):
         center_point = center_of_mass(adjacent_coord_list)
         station_data = [self.all_stations_data_dict[coord] for coord in adjacent_coord_list]
         parent_metros, station_names_eng, station_names_chn, label_simple_directions = zip(*station_data)
+        station_name_dict = {
+            consts.ENG: get_first_item(station_names_eng),
+            consts.CHN: get_first_item(station_names_chn),
+        }
+        label_simple_direction = get_first_item(label_simple_directions)
         station = Station(
             center_point,
             parent_metros,
             station_direction,
-            get_first_item(station_names_eng),
-            get_first_item(station_names_chn),
-            get_first_item(label_simple_directions)
+            station_name_dict,
+            label_simple_direction
         )
         self.station_objs.append(station)
         return self

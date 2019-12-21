@@ -1,4 +1,6 @@
+from functools import reduce
 import json
+import operator as op
 import os
 
 import maplib.constants as consts
@@ -12,7 +14,7 @@ THIS_DIR = os.path.dirname(os.path.realpath(__file__))
 FILE_DIR = os.path.join(THIS_DIR, "files")
 INPUT_FILES_FOLDER_DIR = os.path.join(FILE_DIR, "input_files")
 OUTPUT_FILES_FOLDER_DIR = os.path.join(FILE_DIR, "output_files")
-TEX_DIR = os.path.join(FILE_DIR, "tex")
+TEX_CACHE_DIR = os.path.join(FILE_DIR, "tex_cache")
 JSON_DIR = os.path.join(FILE_DIR, "json")
 METRO_INPUT_FILE_DIR = os.path.join(INPUT_FILES_FOLDER_DIR, "metro_input.xlsx")
 GEOGRAPHY_INPUT_FILE_DIR = os.path.join(INPUT_FILES_FOLDER_DIR, "geography_input.xlsx")
@@ -44,21 +46,38 @@ SVG_HEAD = "".join([
 # base settings
 DECIMAL_DIGITS = 6
 TOLERANCE = 1e-8
+OPEN_OUTPUT_FILE_AT_ONCE = True
 PRINT_TEX_WRITING_PROGRESS_MSG = True
 PRINT_SVG_MODIFYING_MSG = True
+PRINT_FILE_READY_MSG = True
 PRINT_TIMER_MSG = True
+
+# msgs
+TEX_WRITING_PROGRESS_MSG = "Writing '{0}' to {1}"
+SINGLE_TEX_MSG = "{0} {1} - {2}"
+GENERATE_SUCCESSFULLY_MSG = "Successfully generated"
+GENERATE_UNSUCCESSFULLY_MSG = "Already existed"
+REMOVE_SUCCESSFULLY_MSG = "Successfully removed"
+REMOVE_UNSUCCESSFULLY_MSG = "Does not exist"
+TEX_GENERATE_MEG = "Generating tex..."
+TEX_REMOVE_MEG = "Removing tex..."
+SVG_INITIALIZE_MSG = "Initializing json..."
+SVG_COPY_MSG = "Copying json..."
+SVG_COPY_FINISH_MSG = "Successfully copied to {0}"
+FILE_READY_MSG = "File ready at {0}"
+TIMER_MSG = "Consumed time of function {0}: {1:.3f} second(s)"
 
 # size
 FULL_WIDTH = 490.0
 FULL_HEIGHT = 400.0
 FULL_SIZE = np_float(FULL_WIDTH, FULL_HEIGHT)
-FRAME_WIDTH = 450.0
-FRAME_HEIGHT = 320.0
-FRAME_SIZE = np_float(FRAME_WIDTH, FRAME_HEIGHT)
+BODY_WIDTH = 450.0
+BODY_HEIGHT = 320.0
+BODY_SIZE = np_float(BODY_WIDTH, BODY_HEIGHT)
 
 # composition
-MAIN_FRAME_SHIFT_VECTOR = np_float(20.0, 40.0)
-MAIN_MAP_SHIFT_VECTOR = np_float(20.0, 0.0)
+MAP_GROUP_SHIFT_VECTOR = np_float(20.0, 40.0)
+MAP_BODY_SHIFT_VECTOR = np_float(20.0, 0.0)
 GRADIENT_WIDTH = 20.0
 GRADIENT_HEIGHT = 20.0
 MAIN_COLOR = consts.WHITE
@@ -66,12 +85,13 @@ MAIN_COLOR = consts.WHITE
 # mask
 MASK_BASE_COLOR = consts.WHITE
 MASK_COLOR = consts.BLACK
-GRADIENT_MASK_COLOR = consts.WHITE
 
 # tex
-TEX_FONT_CMDS_CHN = ("songti", "heiti", "lishu", "youyuan")
-TEX_FONT_CMDS_ENG = ("rmfamily", "sffamily")
-TEX_FONT_CMDS = TEX_FONT_CMDS_CHN + TEX_FONT_CMDS_ENG
+TEX_FONT_CMDS_DICT = {
+    consts.CHN: ("songti", "heiti", "lishu", "youyuan"),
+    consts.ENG: ("rmfamily", "sffamily"),
+}
+TEX_FONT_CMDS = reduce(op.add, TEX_FONT_CMDS_DICT.values())
 TEX_BASE_SCALE_FACTOR = 0.07
 
 # grid
@@ -91,21 +111,17 @@ STATION_POINT_RADIUS = 0.4
 STATION_POINT_FILL_OPACITY = 1.0
 
 # station frame
-FRAME_RADIUS_DICT = {
+BODY_RADIUS_DICT = {
     "normal": 0.4,
     "interchange": 0.55
 }
-FRAME_STROKE_WIDTH_DICT = {
+BODY_STROKE_WIDTH_DICT = {
     "normal": 0.2,
     "interchange": 0.1
 }
-FRAME_STROKE_OPACITY = 0.9
-FRAME_FILL_COLOR = consts.WHITE
-INTERCHANGE_STATION_FRAME_STROKE_COLOR = consts.BLACK
-
-# geography
-LAND_COLOR = consts.WHITE
-WATER_AREA_COLOR = Color(217, 235, 247)
+BODY_STROKE_OPACITY = 0.9
+BODY_FILL_COLOR = consts.WHITE
+INTERCHANGE_STATION_BODY_STROKE_COLOR = consts.BLACK
 
 # svg paths
 METRO_LOGO_INFO = {
@@ -115,26 +131,41 @@ METRO_LOGO_INFO = {
     "color": Color(215, 5, 8)
 }
 
+# geography colors
+LAND_COLOR = consts.WHITE
+WATER_AREA_COLOR = Color(217, 235, 247)
+
+# tex colors
+STATION_NAME_MAIN_COLOR = consts.BLACK
+STATION_NAME_SUB_COLOR = Color(140, 140, 140)
+STATION_NAME_SHADOW_COLOR = consts.WHITE
+DISTRICT_NAME_COLOR = Color(120, 120, 120)
+WATER_AREA_NAME_COLOR = Color(93, 188, 218)
+
 # tex style
 STATION_NAME_TEX_STYLE = {
     "small_buff": 0.1,
     "big_buff": 0.3,
     "tex_box_format": consts.VERTICAL,
     "tex_buff": -0.2,
-    "scale_factor": {
-        "chn": 1.4,
-        "eng": 1.0,
-    },
-    "font_cmd": {
-        "chn": "youyuan",
-        "eng": "sffamily",
-    },
-    "color": {
-        "chn": consts.BLACK,
-        "eng": Color(140, 140, 140),
+    "languages": {
+        consts.CHN: {
+            "exists": True,
+            "tex_box_index": 0,
+            "scale_factor": 1.4,
+            "font_cmd": "youyuan",
+            "color": STATION_NAME_MAIN_COLOR,
+        },
+        consts.ENG: {
+            "exists": True,
+            "tex_box_index": 1,
+            "scale_factor": 1.0,
+            "font_cmd": "sffamily",
+            "color": STATION_NAME_SUB_COLOR,
+        },
     },
     "shadow": {
-        "color": consts.WHITE,
+        "color": STATION_NAME_SHADOW_COLOR,
         "stroke_width": 0.07,
         "opacity": 0.7,
     },
@@ -143,41 +174,62 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
     "district_name": {
         "tex_box_format": consts.VERTICAL,
         "tex_buff": -0.2,
-        "scale_factor": {
-            "chn": 2.5,
-            "eng": 1.4,
+        "languages": {
+            consts.CHN: {
+                "exists": True,
+                "tex_box_index": 0,
+                "scale_factor": 2.5,
+                "font_cmd": "songti",
+                "color": DISTRICT_NAME_COLOR,
+            },
+            consts.ENG: {
+                "exists": True,
+                "tex_box_index": 1,
+                "scale_factor": 1.4,
+                "font_cmd": "rmfamily",
+                "color": DISTRICT_NAME_COLOR,
+            },
         },
-        "font_cmd": {
-            "chn": "songti",
-            "eng": "rmfamily",
-        },
-        "color": Color(120, 120, 120),
     },
     "river_name": {
         "tex_box_format": consts.HORIZONTAL,
         "tex_buff": 1.0,
-        "scale_factor": {
-            "chn": 2.0,
-            "eng": 2.0,
+        "languages": {
+            consts.CHN: {
+                "exists": True,
+                "tex_box_index": 0,
+                "scale_factor": 2.0,
+                "font_cmd": "songti",
+                "color": WATER_AREA_NAME_COLOR,
+            },
+            consts.ENG: {
+                "exists": True,
+                "tex_box_index": 1,
+                "scale_factor": 2.0,
+                "font_cmd": "rmfamily",
+                "color": WATER_AREA_NAME_COLOR,
+            },
         },
-        "font_cmd": {
-            "chn": "songti",
-            "eng": "rmfamily",
-        },
-        "color": Color(93, 188, 218),
     },
     "lake_name": {
         "tex_box_format": consts.VERTICAL,
         "tex_buff": -0.2,
-        "scale_factor": {
-            "chn": 2.2,
-            "eng": 1.4,
+        "languages": {
+            consts.CHN: {
+                "exists": True,
+                "tex_box_index": 0,
+                "scale_factor": 2.2,
+                "font_cmd": "songti",
+                "color": WATER_AREA_NAME_COLOR,
+            },
+            consts.ENG: {
+                "exists": True,
+                "tex_box_index": 1,
+                "scale_factor": 1.4,
+                "font_cmd": "rmfamily",
+                "color": WATER_AREA_NAME_COLOR,
+            },
         },
-        "font_cmd": {
-            "chn": "songti",
-            "eng": "rmfamily",
-        },
-        "color": Color(93, 188, 218),
     },
 }
 

@@ -17,6 +17,7 @@ class TexNameTemplate(Group):
 
     def __init__(self, id_name, objs, tex_style):
         digest_locals(self)
+        self.set_sorted_languages()
         Group.__init__(self, id_name)
         self.flip_y()
         if "shadow" in self.tex_style.keys():
@@ -28,46 +29,47 @@ class TexNameTemplate(Group):
         aligned_direction = consts.ORIGIN
         return (aligned_point, aligned_direction)
 
+    def set_sorted_languages(self):
+        language_list = []
+        for language, language_style in self.tex_style["languages"].items():
+            if language_style["exists"]:
+                language_index = language_style["tex_box_index"]
+                language_list.append((language_index, language))
+        language_list.sort(key = lambda pair: pair[0])
+        self.sorted_languages = tuple([pair[1] for pair in language_list])
+        return self
+
+    def get_language_style(self, language):
+        return self.tex_style["languages"][language]
+
     def get_partial_groups(self):
-        chn_group = Group(None)
-        eng_group = Group(None)
-        color = self.tex_style["color"]
-        if isinstance(color, dict):
-            chn_group.set_style({
-                "fill": color["chn"],
+        group_list = []
+        for language in self.sorted_languages:
+            language_style = self.get_language_style(language)
+            partial_group = Group(None)
+            partial_group.set_style({
+                "fill": language_style["color"],
             })
-            eng_group.set_style({
-                "fill": color["eng"],
-            })
-        return (chn_group, eng_group)
+            group_list.append(partial_group)
+        return group_list
 
     def get_tex_group(self):
         partial_groups = self.get_partial_groups()
         tex_group = TexGroup(self.body_group_id_name, partial_groups)
-        color = self.tex_style["color"]
-        if isinstance(color, Color):
-            tex_group.set_style({
-                "fill": color,
-            })
         return tex_group
 
     def build_tex_objs(self, obj):
-        tex_str_dict = self.get_tex_str_dict(obj)
-        return [
-            Tex(
+        tex_str_dict = obj.get_name_dict()
+        tex_objs = []
+        for language in self.sorted_languages:
+            language_style = self.get_language_style(language)
+            tex_obj = Tex(
                 tex_str_dict[language],
-                self.tex_style["font_cmd"][language],
-                self.tex_style["scale_factor"][language]
+                language_style["font_cmd"],
+                language_style["scale_factor"]
             )
-            for language in ("chn", "eng")
-            if tex_str_dict[language] is not None
-        ]
-
-    def get_tex_str_dict(self, obj):
-        return {
-            "chn": obj.name_chn,
-            "eng": obj.name_eng,
-        }
+            tex_objs.append(tex_obj)
+        return tex_objs
 
     def add_body_tex(self):
         tex_group = self.get_tex_group()

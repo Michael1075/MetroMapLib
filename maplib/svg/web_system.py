@@ -9,7 +9,7 @@ class WebSystem(Group):
     def __init__(self, id_name, metro_objs, station_objs):
         digest_locals(self, ("metro_objs", "station_objs"))
         Group.__init__(self, id_name)
-        self.init_template_group()
+        self.init_template()
         self.classify_stations()
         self.def_mask_rect()
         self.add_route()
@@ -17,10 +17,6 @@ class WebSystem(Group):
         self.add_interchange_station_frame()
         self.add_station_frame()
         self.add_station_point()
-
-    def init_template_group(self):
-        self.template_group = Group(None)
-        return self
 
     def classify_stations(self):
         self.normal_stations = []
@@ -34,10 +30,10 @@ class WebSystem(Group):
 
     def def_mask_rect(self):
         mask_rect_group = Group("mask_rect")
-        mask_rect_group.use_with_style("frame_rect", {
+        mask_rect_group.use_with_style("body_rect", {
             "fill": params.MASK_BASE_COLOR,
         })
-        self.template_group.append(mask_rect_group)
+        self.template.append(mask_rect_group)
 
     def add_route(self):
         route_mask_group = Group("route_mask")
@@ -48,12 +44,12 @@ class WebSystem(Group):
         })
         for metro in self.metro_objs:
             route_path_template = metro.get_route()
-            self.template_group.append(route_path_template)
+            self.template.append(route_path_template)
             if metro.sub_color is not None:
                 mask_template = metro.get_mask()
                 metro.set_mask(mask_template)
                 route_mask_group.append(mask_template)
-        self.template_group.append(route_mask_group)
+        self.template.append(route_mask_group)
 
         route_group = Group("route")
         route_group.set_style({
@@ -91,12 +87,12 @@ class WebSystem(Group):
 
     def add_normal_station_frame(self):
         for metro in self.metro_objs:
-            template = metro.get_normal_station_frame()
-            self.template_group.append(template)
+            template_obj = metro.get_normal_station_frame()
+            self.template.append(template_obj)
 
         normal_station_frame_group = Group("normal_station_frame")
         normal_station_frame_group.set_style({
-            "stroke-width": params.FRAME_STROKE_WIDTH_DICT["normal"],
+            "stroke-width": params.BODY_STROKE_WIDTH_DICT["normal"],
         })
         for station in self.normal_stations:
             normal_station_frame_group.use(station.parent_metro.frame_id_name, station.center_point)
@@ -109,16 +105,16 @@ class WebSystem(Group):
         for station in self.interchange_stations:
             if station.station_type not in station_type_set:
                 station_type_set.add(station.station_type)
-                template = station.get_interchange_station_frame()
-                template_list.append(template)
-        template_list.sort(key = lambda template: template.id_name)
-        for template in template_list:
-            self.template_group.append(template)
+                template_obj = station.get_interchange_station_frame()
+                template_list.append(template_obj)
+        template_list.sort(key = lambda template_obj: template_obj.id_name)
+        for template_obj in template_list:
+            self.template.append(template_obj)
 
         interchange_station_frame_group = Group("interchange_station_frame")
         interchange_station_frame_group.set_style({
-            "stroke": params.INTERCHANGE_STATION_FRAME_STROKE_COLOR,
-            "stroke-width": params.FRAME_STROKE_WIDTH_DICT["interchange"],
+            "stroke": params.INTERCHANGE_STATION_BODY_STROKE_COLOR,
+            "stroke-width": params.BODY_STROKE_WIDTH_DICT["interchange"],
         })
         for station in self.interchange_stations:
             interchange_station_frame_group.use(station.frame_id_name, station.center_point)
@@ -128,8 +124,8 @@ class WebSystem(Group):
     def add_station_frame(self):
         station_frame_group = Group("station_frame")
         station_frame_group.set_style({
-            "fill": params.FRAME_FILL_COLOR,
-            "stroke-opacity": params.FRAME_STROKE_OPACITY,
+            "fill": params.BODY_FILL_COLOR,
+            "stroke-opacity": params.BODY_STROKE_OPACITY,
         })
         station_frame_group.use("normal_station_frame")
         station_frame_group.use("interchange_station_frame")
@@ -138,8 +134,8 @@ class WebSystem(Group):
 
     def add_station_point(self):
         for metro in self.metro_objs:
-            template = metro.get_station_point()
-            self.template_group.append(template)
+            template_obj = metro.get_station_point()
+            self.template.append(template_obj)
             
         station_point_group = Group("station_point")
         station_point_group.set_style({

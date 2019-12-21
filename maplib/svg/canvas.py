@@ -42,6 +42,8 @@ class Canvas(object):
     def define(self, component):
         if hasattr(component, "tex_objs"):
             self.global_tex_objs.extend(component.tex_objs)
+        if hasattr(component, "template"):
+            self.define(component.template)
         self.defs.append(component)
 
     def draw(self, id_name):

@@ -28,15 +28,15 @@ def dump_json(obj, file_name):
 
 def generate_tex_in_json(generated_tex_objs, global_file_dict, global_path_dict):
     for tex_obj in generated_tex_objs:
-        global_file_dict[tex_obj.font_type][str(tex_obj)] = tex_obj.tex_file_dict
+        global_file_dict[tex_obj.font_type][tex_obj.hash_val] = tex_obj.tex_file_dict
         global_path_dict[tex_obj.font_type].update(tex_obj.tex_path_dict)
     return (global_file_dict, global_path_dict)
 
 
 def remove_tex_in_json(removed_tex_objs, global_file_dict, global_path_dict):
-    removed_tex_hash_vals = [str(tex_obj) for tex_obj in removed_tex_objs]
+    removed_tex_hash_vals = [tex_obj.hash_val for tex_obj in removed_tex_objs]
     for tex_obj in removed_tex_objs:
-        global_file_dict[tex_obj.font_type].pop(str(tex_obj))
+        global_file_dict[tex_obj.font_type].pop(tex_obj.hash_val)
         # Get difference_set to remove path precisely.
         font_file_dict = global_file_dict[tex_obj.font_type]
         old_sets = [
@@ -89,7 +89,7 @@ def init_json():
     * Note, the dict_key in json file should only be a str.
     """
     if params.PRINT_SVG_MODIFYING_MSG:
-        print("Initializing json...")
+        print(params.SVG_INITIALIZE_MSG)
     global_file_dict, global_path_dict = get_global_tex_dicts()
     new_global_file_dict = dict()
     for tex_font, font_file_dict in global_file_dict.items():
@@ -119,7 +119,7 @@ def init_json():
 
 def create_transcript(file_name_suffix):
     if params.PRINT_SVG_MODIFYING_MSG:
-        print("Copying json...")
+        print(params.SVG_COPY_MSG)
     for old_file_name in (params.JSON_TEX_FILE_DEFAULT_DIR, params.JSON_TEX_PATH_DEFAULT_DIR):
         new_file_name = old_file_name.replace(".json", file_name_suffix + ".json")
         commands = [
@@ -131,28 +131,26 @@ def create_transcript(file_name_suffix):
         ]
         os.system(" ".join(commands))
         if params.PRINT_SVG_MODIFYING_MSG:
-            print("Copied to " + new_file_name)
+            print(params.SVG_COPY_FINISH_MSG.format(new_file_name))
 
 
 def get_single_tex(tex_obj, generate_file, use_current_data):
-    msg_list = [str(tex_obj), tex_obj.tex_string, "-"]
     result = tex_obj.get_dict_if_existed(use_current_data)
     if generate_file:
         if result is None:
-            result_info = "Successfully generated"
+            result_msg = params.GENERATE_SUCCESSFULLY_MSG
             tex_obj.write_tex_file(result)
         else:
-            result_info = "Already existed"
+            result_msg = params.GENERATE_UNSUCCESSFULLY_MSG
             tex_obj = None
     else:
         if result is not None:
-            result_info = "Successfully removed"
+            result_msg = params.REMOVE_SUCCESSFULLY_MSG
         else:
-            result_info = "Does not exist"
+            result_msg = params.REMOVE_UNSUCCESSFULLY_MSG
             tex_obj = None
-    msg_list.append(result_info)
     if params.PRINT_SVG_MODIFYING_MSG:
-        print(" ".join(msg_list))
+        print(params.SINGLE_TEX_MSG.format(tex_obj.hash_val, tex_obj.tex_string, result_msg))
     return tex_obj
 
 
@@ -162,8 +160,7 @@ def modify_tex(*string_tuples):
     Every string_tuple should contain 3 elements as the following format:
         tuple(
             modify_option: 0 for removing, 1 for generating;
-            font_option: either "chn" or "eng",
-                or a tuple which consists specified font_types;
+            font_types: a str or a tuple;
             string: a str
         ).
     Judge whether generate or remove based on current json files.
@@ -174,7 +171,7 @@ def modify_tex(*string_tuples):
     generated_tex_objs, removed_tex_objs = string_tuples_to_tex_objs(string_tuples)
     global_file_dict, global_path_dict = get_global_tex_dicts()
     if params.PRINT_SVG_MODIFYING_MSG and generated_tex_objs:
-        print("Generating tex...")
+        print(params.TEX_GENERATE_MEG)
     with ft.ThreadPoolExecutor() as executor:
         filtered_generated_tex_objs = [
             tex_obj for tex_obj in executor.map(
@@ -185,7 +182,7 @@ def modify_tex(*string_tuples):
         filtered_generated_tex_objs, global_file_dict, global_path_dict
     )
     if params.PRINT_SVG_MODIFYING_MSG and removed_tex_objs:
-        print("Removing tex...")
+        print(params.TEX_REMOVE_MEG)
     filtered_removed_tex_objs = [
         tex_obj for tex_obj in map(
             lambda tex_obj: get_single_tex(tex_obj, False, global_file_dict), removed_tex_objs
@@ -198,22 +195,16 @@ def modify_tex(*string_tuples):
 
 
 def string_tuples_to_tex_objs(string_tuples):
-    font_types_dict = {
-        "chn": params.TEX_FONT_CMDS_CHN,
-        "eng": params.TEX_FONT_CMDS_ENG,
-    }
     all_tex_info = []
-    for modify_option, font_option, string in string_tuples:
+    for modify_option, font_types, string in string_tuples:
         if modify_option == 1:
             generate_file = True
         elif modify_option == 0:
             generate_file = False
         else:
             raise ValueError(modify_option)
-        try:
-            font_types = font_types_dict[font_option]
-        except KeyError:
-            font_types = font_option
+        if isinstance(font_types, str):
+            font_types = (font_types,)
         all_tex_info.extend([
             (string, font_type, generate_file)
             for font_type in font_types

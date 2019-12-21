@@ -35,12 +35,16 @@ class Element(ETElement):
         ETElement.append(self, subelement)
         if hasattr(subelement, "tex_objs"):
             if not hasattr(self, "tex_objs"):
-                self.init_tex_objs()
-            self.extend_tex_objs(subelement.tex_objs)
+                self.tex_objs = []
+            self.tex_objs.extend(subelement.tex_objs)
+        if hasattr(subelement, "template"):
+            if not hasattr(self, "template"):
+                self.init_template()
+            self.template.append(subelement.template)
         return self
 
-    def init_tex_objs(self):
-        self.tex_objs = []
+    def init_template(self):
+        self.template = Group(None)
         return self
 
     def init_id(self, id_name):
@@ -66,10 +70,6 @@ class Element(ETElement):
     def set_attr_val(self, key, val):
         assert key in self.attr_names, NotImplementedError(key)
         self.attrib[key] = self.attr_val_to_str(val)
-        return self
-
-    def extend_tex_objs(self, tex_objs_list):
-        self.tex_objs.extend(tex_objs_list)
         return self
 
     def set_style(self, style_dict):

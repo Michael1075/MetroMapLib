@@ -17,13 +17,13 @@ from maplib.utils.alignable import Frame
 
 class BackgroundFrame(Frame):
     def __init__(self):
-        Frame.__init__(self, params.FRAME_SIZE)
+        Frame.__init__(self, params.BODY_SIZE)
         self.align_at_origin(consts.LD)
 
 
-class FrameRectangle(Rectangle):
+class BodyRectangle(Rectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name, params.FRAME_SIZE)
+        Rectangle.__init__(self, id_name, params.BODY_SIZE)
         self.set_style({
             "stroke-width": 0.,
         })
@@ -41,7 +41,7 @@ class SidePart(Rectangle):
     def __init__(self, id_name):
         Rectangle.__init__(self, id_name, params.FULL_SIZE)
         mask = self.get_mask()
-        self.mask = mask
+        self.template = mask
         self.set_style({
             "stroke-width": 0.,
             "fill": params.MAIN_COLOR,
@@ -53,9 +53,9 @@ class SidePart(Rectangle):
         mask.use_with_style("full_rect", {
             "fill": params.MASK_BASE_COLOR,
         })
-        mask.use_with_style("frame_rect", {
+        mask.use_with_style("body_rect", {
             "fill": params.MASK_COLOR,
-        }, params.MAIN_FRAME_SHIFT_VECTOR)
+        }, params.MAP_GROUP_SHIFT_VECTOR)
         return mask
 
 
@@ -73,45 +73,47 @@ class Grid(Group):
     def get_path(self):
         path = Path(None)
         for k in range(*[round(val) for val in (
-            params.GRID_STEP, params.FRAME_WIDTH, params.GRID_STEP
+            params.GRID_STEP, params.BODY_WIDTH, params.GRID_STEP
         )]):
             path.move_to(np_float(k, 0))
-            path.line_to(np_float(k, params.FRAME_HEIGHT))
+            path.line_to(np_float(k, params.BODY_HEIGHT))
         for k in range(*[round(val) for val in (
-            params.GRID_STEP, params.FRAME_HEIGHT, params.GRID_STEP
+            params.GRID_STEP, params.BODY_HEIGHT, params.GRID_STEP
         )]):
             path.move_to(np_float(0, k))
-            path.line_to(np_float(params.FRAME_WIDTH, k))
+            path.line_to(np_float(params.BODY_WIDTH, k))
         path.finish_path()
         return path
 
 
 class GradientFrame(Group):
+    def __init__(self, gradient_color):
+        self.gradient_color = gradient_color
+        Group.__init__(self, None)
+        for direction in consts.FOUR_BASE_DIRECTIONS:
+            gradient_obj = self.get_gradient_obj(direction)
+            self.append(gradient_obj)
+
     def get_gradient_obj(self, direction):
         direction_num = shrink_value(get_simplified_direction(direction) // 2, 0, 4)
         gradient_id_name = "grad" + str(direction_num)
         gradient_obj = LinearGradient(gradient_id_name, direction)
-        gradient_obj.add_begin_color(params.GRADIENT_MASK_COLOR, 0.)
-        gradient_obj.add_end_color(params.GRADIENT_MASK_COLOR, 1.)
+        gradient_obj.add_begin_color(self.gradient_color, 0.)
+        gradient_obj.add_end_color(self.gradient_color, 1.)
         return gradient_obj
-
-    def append_components(self):
-        for direction in consts.FOUR_BASE_DIRECTIONS:
-            gradient_obj = self.get_gradient_obj(direction)
-            self.append(gradient_obj)
-        return self
 
 
 class MapFrame(Group):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
         background_frame = BackgroundFrame()
-        gradient_frame = GradientFrame(None)
+        gradient_frame = GradientFrame(params.MAIN_COLOR)
+        self.template = gradient_frame
         for direction in consts.FOUR_BASE_DIRECTIONS:
             if is_horizontal(direction):
-                rect_box_size = np_float(params.GRADIENT_WIDTH, params.FRAME_HEIGHT)
+                rect_box_size = np_float(params.GRADIENT_WIDTH, params.BODY_HEIGHT)
             else:
-                rect_box_size = np_float(params.FRAME_WIDTH, params.GRADIENT_HEIGHT)
+                rect_box_size = np_float(params.BODY_WIDTH, params.GRADIENT_HEIGHT)
             side_rectangle = Rectangle(None, rect_box_size)
             side_rectangle.align(background_frame.get_critical_point(direction), direction)
             side_rectangle.set_style({
