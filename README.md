@@ -1,5 +1,3 @@
-![figure](figure.png)
-
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat)](http://choosealicense.com/licenses/mit/)
 
 # MetroMapLib
@@ -14,23 +12,37 @@ python -m pip install -r requirements.txt
 ```
 
 **Default package requirements**
+
 > `concurrent`
+> 
 > `functools`
+> 
 > `hashlib`
+> 
 > `inspect`
+> 
 > `json`
+> 
 > `operator`
+> 
 > `os`
+> 
 > `re`
+> 
 > `time`
+> 
 > `xml`
 
 **Other package requirements** (Also listed in `requirements.txt`)
+
 > `numpy` (1.17.4)
+> 
 > `openpyxl` (3.0.2)
 
 **System requirements**
+
 > LaTeX
+> 
 > Google Chrome
 
 ## Using MetroMapLib
