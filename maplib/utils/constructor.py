@@ -1,7 +1,8 @@
 import maplib.constants as consts
+import maplib.parameters as params
 
-from maplib.tools.sheet_tools import get_workbook_data_dict
 from maplib.tools.simple_functions import get_first_item
+from maplib.tools.simple_functions import modify_num
 from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import center_of_mass
 from maplib.utils.color import Color
@@ -11,47 +12,130 @@ from maplib.utils.models import Station
 
 
 class Constructor(object):
-    def __init__(self, metro_file_name, geography_file_name):
-        self.metro_database_dict = get_workbook_data_dict(metro_file_name, child_sheet_max_column = 7)
-        self.geography_database_dict = get_workbook_data_dict(geography_file_name, ignore_none = True)
-        self.build_metros()
-        self.build_stations()
-        self.build_name_obj()
-        self.build_geometry_data()
+    def __init__(self):
+        self.input_dict = params.INPUT_DATABASE_DICT
+        self.all_stations_data_dict = {}
+        self.metro_objs = self.build_metros()
+        self.station_coord_tuples = list(self.all_stations_data_dict.keys())
+        self.station_objs = self.build_stations()
+        self.name_objs_dict = self.build_name_objs()
+        self.geography_data_dict = self.build_geography_objs()
+
+    @staticmethod
+    def string_to_vals(string, num_vals=None, merge_index=None, modify_indexes=None):
+        if num_vals is None:
+            components = string.split()
+        else:
+            if merge_index is None:
+                merge_index = num_vals - 1
+            components = string.split(maxsplit=merge_index)
+            right_part = components.pop()
+            rmaxsplit = num_vals - merge_index - 1
+            components.extend(right_part.rsplit(maxsplit=rmaxsplit))
+        if modify_indexes is None:
+            modify_indexes = ()
+        result = []
+        for k, s in enumerate(components):
+            if s == "-":
+                val = None
+            else:
+                try:
+                    val = float(s)
+                    if k in modify_indexes:
+                        val = modify_num(val)
+                except ValueError:
+                    val = s
+            result.append(val)
+        return result
+
+    @staticmethod
+    def format_list_with_strs(data, flush_left_indexes=None):
+        if flush_left_indexes is None:
+            flush_left_indexes = ()
+        result_lists = []
+        for single_data in data:
+            strs = []
+            for val in single_data:
+                if val is None:
+                    s = "-"
+                else:
+                    try:
+                        val = modify_num(val)
+                    except ValueError:
+                        pass
+                    s = str(val)
+                strs.append(s)
+            result_lists.append(strs)
+        zipped_lists = list(zip(*result_lists))
+        max_lengths = [
+            max([len(s) for s in zipped_lists[k]])
+            for k in range(len(zipped_lists))
+        ]
+        result = []
+        for strs in result_lists:
+            single_list = []
+            for k, s in enumerate(strs):
+                spaces = " " * (max_lengths[k] - len(s))
+                if k in flush_left_indexes:
+                    s += spaces
+                else:
+                    s = spaces + s
+                single_list.append(s)
+            single_str = " ".join(single_list).rstrip()
+            result.append(single_str)
+        return result
+
+    @staticmethod
+    def get_metro_data(metro_dict):
+        metro_name_dict = metro_dict["name"]
+        serial_num = metro_dict["serial_num"]
+        color_str = metro_dict["color"]
+        main_color = Color(*string_to_nums(color_str))
+        sub_color_str = metro_dict["sub_color"]
+        if sub_color_str is not None and sub_color_str != "None":
+            sub_color = Color(*string_to_nums(sub_color_str))
+        else:
+            sub_color = sub_color_str
+        route_type = metro_dict["route_type"]
+        stations_data = []
+        for station_data_str in metro_dict["stations_data"]:
+            station_data = Constructor.string_to_vals(station_data_str, 7, 5, (2, 3))
+            stations_data.append(station_data)
+        return serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data
+
+    @staticmethod
+    def format_metro_dict(serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data):
+        color_str = main_color.simple_str()
+        if sub_color is not None and sub_color != "None":
+            sub_color_str = sub_color.simple_str()
+        else:
+            sub_color_str = sub_color
+        stations_data_strs = Constructor.format_list_with_strs(stations_data, (5, 6))
+        return {
+            "name": metro_name_dict,
+            "serial_num": serial_num,
+            "color": color_str,
+            "sub_color": sub_color_str,
+            "route_type": route_type,
+            "stations_data": stations_data_strs,
+        }
 
     def build_metros(self):
-        self.metro_objs = []
-        self.all_stations_data_dict = dict()
-        for metro_name, metro_data in self.metro_database_dict.items():
-            metro_basic_data, metro_stations_data = metro_data
-            metro_name_chn, metro_serial_num, main_color_str, sub_color_str, route_type = metro_basic_data
-            metro_name_dict = {
-                consts.ENG: metro_name,
-                consts.CHN: metro_name_chn,
-            }
-            main_color = Color(*string_to_nums(main_color_str))
-            if sub_color_str is not None and sub_color_str != "None":
-                sub_color = Color(*string_to_nums(sub_color_str))
-            else:
-                sub_color = sub_color_str
-            metro = Metro(
-                metro_serial_num,
-                metro_name_dict,
-                main_color,
-                sub_color,
-                route_type,
-                metro_stations_data
-            )
-            self.metro_objs.append(metro)
+        metro_objs = []
+        for metro_dict in self.input_dict["metro_database"]:
+            metro_data = Constructor.get_metro_data(metro_dict)
+            metro = Metro(*metro_data)
+            metro_objs.append(metro)
             self.all_stations_data_dict.update(metro.real_stations_data_dict)
-        self.metro_objs.sort(key = lambda metro: metro.serial_num)
-        return self
+        metro_objs.sort(key = lambda metro: metro.serial_num)
+        return metro_objs
 
     def build_stations(self):
-        self.station_coord_tuples = list(self.all_stations_data_dict.keys())
-        self.station_objs = []
+        station_objs = []
         while self.station_coord_tuples:
-            self.build_station()
+            station_obj = self.build_station()
+            station_objs.append(station_obj)
+        return station_objs
 
     def build_station(self):
         station_coord_tuple = self.station_coord_tuples[0]
@@ -81,8 +165,7 @@ class Constructor(object):
             station_name_dict,
             label_simple_direction
         )
-        self.station_objs.append(station)
-        return self
+        return station
 
     def expand_station(self, station_coord_tuple):
         old_adjacent_coord_set = set()
@@ -96,28 +179,49 @@ class Constructor(object):
                         new_adjacent_coord_set.add(extended_coord_tuple)
         return new_adjacent_coord_set
 
-    def build_name_obj(self):
-        self.name_objs_dict = dict()
-        for name_type, data in self.geography_database_dict.items():
-            name_type = name_type.replace(" ", "_")
-            basic_data, detailed_data = data
-            if basic_data[0] == "name":
-                obj_list = []
-                for component_data in detailed_data:
-                    obj = SimpleNameModel(*component_data)
-                    obj_list.append(obj)
-                self.name_objs_dict[name_type] = obj_list
-        return self
+    @staticmethod
+    def get_name_data(name_data_str):
+        x_coord, y_coord, name_eng, name_chn = Constructor.string_to_vals(name_data_str, 4, 2)
+        return x_coord, y_coord, name_eng, name_chn
 
-    def build_geometry_data(self):
-        geometry_obj_types = ("Land", "Island", "River", "Lake", "InnerLake")
-        self.geometry_data_dict = {obj_type: [] for obj_type in geometry_obj_types}
-        for obj_name, data in self.geography_database_dict.items():
-            basic_data, detailed_data = data
-            obj_type = basic_data[0]
-            if obj_type in geometry_obj_types:
-                rest_basic_data = [float(val) for val in basic_data[1:]]
-                rest_basic_data.insert(0, obj_name)
-                self.geometry_data_dict[obj_type].append((rest_basic_data, detailed_data))
-        return self
+    @staticmethod
+    def get_name_type_data(name_data_strs):
+        return [Constructor.get_name_data(name_data_str) for name_data_str in name_data_strs]
 
+    @staticmethod
+    def format_name_type_list(name_data):
+        return Constructor.format_list_with_strs(name_data, (2, 3))
+
+    def build_name_objs(self):
+        name_objs_dict = {}
+        for name_type, name_data_strs in self.input_dict["name_database"].items():
+            name_obj_list = []
+            for name_data_str in name_data_strs:
+                name_data = Constructor.get_name_data(name_data_str)
+                name_obj = SimpleNameModel(*name_data)
+                name_obj_list.append(name_obj)
+            name_objs_dict[name_type] = name_obj_list
+        return name_objs_dict
+
+    @staticmethod
+    def get_geography_data(obj_dict):
+        coord_data_strs = obj_dict.pop("coord_data")
+        obj_data = []
+        for coord_data_str in coord_data_strs:
+            coord_data = Constructor.string_to_vals(coord_data_str)
+            obj_data.append(coord_data)
+        return obj_dict, obj_data
+
+    @staticmethod
+    def format_geography_obj_dict(obj_dict, obj_data):
+        obj_dict["coord_data"] = Constructor.format_list_with_strs(obj_data)
+        return obj_dict
+
+    def build_geography_objs(self):
+        geography_data_dict = {}
+        for obj_type, objs in self.input_dict["geography_database"].items():
+            geography_data_dict[obj_type] = []
+            for obj_dict in objs:
+                geography_data = Constructor.get_geography_data(obj_dict)
+                geography_data_dict[obj_type].append(geography_data)
+        return geography_data_dict

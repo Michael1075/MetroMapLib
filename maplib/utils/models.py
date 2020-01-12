@@ -1,7 +1,6 @@
 import maplib.constants as consts
 import maplib.parameters as params
 
-from maplib.svg.path_types import LineArcPath
 from maplib.svg.path_types import LPath
 from maplib.svg.path_types import OPath
 from maplib.svg.path_types import YPath
@@ -10,7 +9,6 @@ from maplib.svg.svg_element import Mask
 from maplib.svg.svg_element import Rectangle
 from maplib.tools.assertions import assert_is_standard_route
 from maplib.tools.assertions import assert_station_on_route
-from maplib.tools.config_ops import digest_locals
 from maplib.tools.numpy_type_tools import np_float
 from maplib.tools.numpy_type_tools import np_to_tuple
 from maplib.tools.simple_functions import adjacent_n_tuples
@@ -24,20 +22,6 @@ from maplib.tools.space_ops import solve_intersection_point
 from maplib.utils.alignable import Frame
 
 
-class Route(LineArcPath):
-    def __init__(self, metro):
-        id_name = metro.route_id_name
-        arc_radius = params.ROUTE_ARC_RADIUS
-        if metro.route_type == "l":
-            LPath.__init__(self, id_name, metro.control_points, arc_radius)
-        elif metro.route_type == "o":
-            OPath.__init__(self, id_name, metro.control_points, arc_radius)
-        elif metro.route_type == "y":
-            YPath.__init__(self, id_name, metro.main_control_points, metro.sub_control_points, arc_radius)
-        else:
-            raise NotImplementedError(metro.route_type)
-
-
 class RouteMask(Mask):
     def __init__(self, metro_obj):
         id_name = metro_obj.mask_id_name
@@ -49,12 +33,13 @@ class RouteMask(Mask):
 class NormalStationFrame(Circle):
     def __init__(self, metro_obj):
         id_name = metro_obj.frame_id_name
-        color = metro_obj.main_color
         radius = metro_obj.get_normal_station_frame_radius()
         Circle.__init__(self, id_name, radius)
-        self.set_style({
-            "stroke": color,
-        })
+        if params.STATION_FRAME_STYLE["stroke_color"]["normal"] is None:
+            color = metro_obj.main_color
+            self.set_style({
+                "stroke": color,
+            })
 
 
 class InterchangeStationFrame(Rectangle):
@@ -62,7 +47,7 @@ class InterchangeStationFrame(Rectangle):
         id_name = station_obj.frame_id_name
         radius = station_obj.get_interchange_station_frame_radius()
         box_size = station_obj.get_interchange_station_frame_box_size()
-        Rectangle.__init__(self, station_obj.frame_id_name, box_size)
+        Rectangle.__init__(self, id_name, box_size)
         self.align_at_origin()
         self.set_corner_radius(radius)
 
@@ -71,7 +56,7 @@ class StationPoint(Circle):
     def __init__(self, metro_obj):
         id_name = metro_obj.point_id_name
         color = metro_obj.main_color
-        point_radius = params.STATION_POINT_RADIUS
+        point_radius = params.STATION_POINT_STYLE["radius"]
         Circle.__init__(self, id_name, point_radius)
         self.set_style({
             "fill": color,
@@ -88,24 +73,29 @@ class Metro(object):
     route_type: a str in ("l", "o", "y");
     stations_data: an array-like database which contains 7 elements as the following format:
         tuple(
-            station_name_eng: a str,
-            station_name_chn: a str,
+            station_x_coord: an int,
+            station_y_coord: an int,
+            simplified_direction: an integer in range(4),
+            label_simple_direction: an integer in range(8),
             sign: either "*", "#" or "^" (
                 if "*", the station_obj will not be built;
                 if "#" or "^", a y-type route will be built
             ),
-            station_x_coord: an int,
-            station_y_coord: an int,
-            simplified_direction: an integer in range(4),
-            label_simple_direction: an integer in range(8)
+            station_name_eng: a str,
+            station_name_chn: a str
         ).
     """
     def __init__(self, serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data):
-        route_id_name = "r" + str(serial_num)
-        mask_id_name = "m" + str(serial_num)
-        frame_id_name = "n" + str(serial_num)
-        point_id_name = "p" + str(serial_num)
-        digest_locals(self)
+        self.serial_num = serial_num
+        self.metro_name_dict = metro_name_dict
+        self.main_color = main_color
+        self.sub_color = sub_color
+        self.route_type = route_type
+        self.stations_data = stations_data
+        self.route_id_name = "r" + str(serial_num)
+        self.mask_id_name = "m" + str(serial_num)
+        self.frame_id_name = "n" + str(serial_num)
+        self.point_id_name = "p" + str(serial_num)
         self.init_dicts()
         self.digest_stations_data()
         if self.route_type == "y":
@@ -135,21 +125,21 @@ class Metro(object):
         dict_key: a tuple of a point either given or calculated
         dict_val: simplified_direction
         """
-        self.stations_data_dict = dict()
-        self.real_stations_data_dict = dict()
-        self.coord_to_direction_dict = dict()
+        self.stations_data_dict = {}
+        self.real_stations_data_dict = {}
+        self.coord_to_direction_dict = {}
         return self
 
     def digest_stations_data(self):
         self.loop = True if self.route_type == "o" else False
-        self.station_coords = []
-        self.signs = []
+        station_coords = []
+        signs = []
         for station_data in self.stations_data:
-            station_name_eng, station_name_chn, sign, station_x_coord, station_y_coord, \
-            simplified_direction, label_simple_direction = station_data
+            station_x_coord, station_y_coord, simplified_direction, label_simple_direction, \
+                sign, station_name_eng, station_name_chn = station_data
             station_coord = np_float(station_x_coord, station_y_coord)
-            self.station_coords.append(station_coord)
-            self.signs.append(sign)
+            station_coords.append(station_coord)
+            signs.append(sign)
             self.stations_data_dict[np_to_tuple(station_coord)] = (
                 sign,
                 station_name_eng,
@@ -157,6 +147,8 @@ class Metro(object):
                 label_simple_direction
             )
             self.coord_to_direction_dict[np_to_tuple(station_coord)] = simplified_direction
+        self.station_coords = station_coords
+        self.signs = signs
         return self
 
     def handle_non_y_type(self):
@@ -236,17 +228,25 @@ class Metro(object):
         return append_point
 
     def get_route(self):
-        return Route(self)
+        id_name = self.route_id_name
+        arc_radius = params.ROUTE_STYLE["arc_radius"]
+        if self.route_type == "l":
+            return LPath(id_name, self.control_points, arc_radius)
+        if self.route_type == "o":
+            return OPath(id_name, self.control_points, arc_radius)
+        if self.route_type == "y":
+            return YPath(id_name, self.main_control_points, self.sub_control_points, arc_radius)
+        raise NotImplementedError(self.route_type)
 
     def get_mask(self):
         return RouteMask(self)
 
-    def set_mask(self, mask_obj):
-        self.mask = mask_obj
+    def set_mask(self, mask_template):
+        self.mask = mask_template
         return self
 
     def get_normal_station_frame_radius(self):
-        return params.BODY_RADIUS_DICT["normal"]
+        return params.STATION_FRAME_STYLE["radius"]["normal"]
 
     def get_normal_station_frame(self):
         return NormalStationFrame(self)
@@ -256,11 +256,15 @@ class Metro(object):
 
 
 class Station(object):
-    def __init__(self, center_point, parent_metros, station_direction, \
+    def __init__(self, center_point, parent_metros, station_direction,
             station_name_dict, label_simple_direction):
+        self.center_point = center_point
+        self.parent_metros = parent_metros
+        self.station_direction = station_direction
+        self.station_name_dict = station_name_dict
         station_size = len(parent_metros)
-        label_direction = num_to_base_direction(label_simple_direction)
-        digest_locals(self)
+        self.station_size = station_size
+        self.label_direction = num_to_base_direction(label_simple_direction)
         if station_size == 1:
             self.init_normal_station()
         else:
@@ -270,24 +274,22 @@ class Station(object):
         return self.station_name_dict
 
     def init_normal_station(self):
-        is_normal = True
-        parent_metro = self.parent_metros[0]
-        digest_locals(self)
+        self.is_normal = True
+        self.parent_metro = self.parent_metros[0]
         self.set_normal_station_frame()
         return self
 
     def init_interchange_station(self):
-        is_normal = False
-        frame_id_name = self.station_direction + str(self.station_size)
-        station_type = (self.station_size, self.station_direction)
-        digest_locals(self)
+        self.is_normal = False
+        self.frame_id_name = self.station_direction + str(self.station_size)
+        self.station_type = (self.station_size, self.station_direction)
         positive_direction = get_positive_direction(self.station_direction)
         positioned_point = self.center_point - (self.station_size - 1) * positive_direction / 2
         self.point_coords = [(positioned_point + k * positive_direction) for k in range(self.station_size)]
         self.set_interchange_station_frame()
 
     def get_interchange_station_frame_radius(self):
-        return params.BODY_RADIUS_DICT["interchange"]
+        return params.STATION_FRAME_STYLE["radius"]["interchange"]
 
     def get_interchange_station_frame_box_size(self):
         radius = self.get_interchange_station_frame_radius()
@@ -301,8 +303,9 @@ class Station(object):
         return InterchangeStationFrame(self)
 
     def set_frame(self, box_size):
-        self.frame = Frame(box_size)
-        self.frame.align(self.center_point)
+        frame = Frame(box_size)
+        frame.align(self.center_point)
+        self.frame = frame
         return self
 
     def set_normal_station_frame(self):
@@ -318,14 +321,12 @@ class Station(object):
 
 
 class SimpleNameModel(object):
-    def __init__(self, name_eng, name_chn, x_coord, y_coord):
-        name_dict = {
+    def __init__(self, x_coord, y_coord, name_eng, name_chn):
+        self.name_dict = {
             consts.ENG: name_eng,
             consts.CHN: name_chn,
         }
-        center_point = np_float(x_coord, y_coord)
-        digest_locals(self, ("name_dict", "center_point"))
+        self.center_point = np_float(x_coord, y_coord)
 
     def get_name_dict(self):
         return self.name_dict
-

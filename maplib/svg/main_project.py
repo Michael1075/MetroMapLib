@@ -15,18 +15,9 @@ from maplib.svg.web_system import WebSystem
 from maplib.utils.constructor import Constructor
 
 
-class InputConstructor(Constructor):
-    def __init__(self):
-        Constructor.__init__(
-            self,
-            params.METRO_INPUT_FILE_DIR,
-            params.GEOGRAPHY_INPUT_FILE_DIR
-        )
-
-
-class MapBody(Group, InputConstructor):
+class MapBody(Group, Constructor):
     def __init__(self, id_name):
-        InputConstructor.__init__(self)
+        Constructor.__init__(self)
         Group.__init__(self, id_name)
         self.shift(params.MAP_BODY_SHIFT_VECTOR)
         components = self.get_components()
@@ -35,7 +26,7 @@ class MapBody(Group, InputConstructor):
 
     def get_components(self):
         return (
-            GeographicMap("geographic_map", self.geometry_data_dict),
+            GeographicMap("geographic_map", self.geography_data_dict),
             GeographicName("geographic_name", self.name_objs_dict),
             WebSystem("web_system", self.metro_objs, self.station_objs),
             StationName("station_name", self.station_objs),
@@ -53,8 +44,8 @@ class MapGroup(Group):
     def get_components(self):
         return (
             MapBody("map_body"),
-            MapFrame("map_frame"),
             Grid("grid"),
+            MapFrame("map_frame"),
         )
 
 
@@ -78,4 +69,3 @@ class Project(Canvas):
         self.draw("map_group")
         self.draw("side_part")
         self.draw("Shanghai_metro_logo")
-

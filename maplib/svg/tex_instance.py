@@ -7,17 +7,16 @@ from maplib.svg.svg_element import Group
 from maplib.svg.tex import Tex
 from maplib.svg.tex import TexBox
 from maplib.svg.tex import TexGroup
-from maplib.tools.config_ops import digest_locals
 from maplib.tools.space_ops import get_simplified_direction
-from maplib.utils.color import Color
 
 
 class TexNameTemplate(Group):
     body_group_id_name = None
 
     def __init__(self, id_name, objs, tex_style):
-        digest_locals(self)
-        self.set_sorted_languages()
+        self.objs = objs
+        self.tex_style = tex_style
+        self.sorted_languages = self.get_sorted_languages()
         Group.__init__(self, id_name)
         self.flip_y()
         if "shadow" in self.tex_style.keys():
@@ -27,17 +26,16 @@ class TexNameTemplate(Group):
     def get_aligning_information(self, obj):
         aligned_point = obj.center_point
         aligned_direction = consts.ORIGIN
-        return (aligned_point, aligned_direction)
+        return aligned_point, aligned_direction
 
-    def set_sorted_languages(self):
+    def get_sorted_languages(self):
         language_list = []
         for language, language_style in self.tex_style["languages"].items():
-            if language_style["exists"]:
+            if language_style["tex_box_index"] is not None:
                 language_index = language_style["tex_box_index"]
                 language_list.append((language_index, language))
         language_list.sort(key = lambda pair: pair[0])
-        self.sorted_languages = tuple([pair[1] for pair in language_list])
-        return self
+        return tuple([pair[1] for pair in language_list])
 
     def get_language_style(self, language):
         return self.tex_style["languages"][language]
@@ -111,7 +109,7 @@ class StationName(TexNameTemplate):
         aligned_direction = -label_direction
         align_buff = align_buffs[get_simplified_direction(label_direction) % 2]
         aligned_point = station.frame.get_critical_point(label_direction) + align_buff * label_direction
-        return (aligned_point, aligned_direction)
+        return aligned_point, aligned_direction
 
 
 class GeographicName(Group):
@@ -120,5 +118,3 @@ class GeographicName(Group):
         for name_type, obj_list in name_objs_dict.items():
             name_group = TexNameTemplate(name_type, obj_list, params.GEOGRAPHIC_NAME_TEX_STYLE[name_type])
             self.append(name_group)
-
-

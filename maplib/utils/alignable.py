@@ -6,11 +6,11 @@ class Alignable(object):
         self.box_size = box_size
         return self
 
-    def align(self, aligned_point, aligned_direction = consts.ORIGIN):
+    def align(self, aligned_point, aligned_direction=consts.ORIGIN):
         self.center_point = aligned_point - self.get_critical_vector(aligned_direction)
         return self
 
-    def align_at_origin(self, aligned_direction = consts.ORIGIN):
+    def align_at_origin(self, aligned_direction=consts.ORIGIN):
         self.align(consts.ORIGIN, aligned_direction)
         return self
 
@@ -24,4 +24,3 @@ class Alignable(object):
 class Frame(Alignable):
     def __init__(self, box_size):
         self.set_box_size(box_size)
-

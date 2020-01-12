@@ -11,11 +11,13 @@ from maplib.tools.space_ops import get_simplified_direction
 def assert_true_or_raise(func):
     def wrapper(*args, **kwargs):
         result = func(*args, **kwargs)
-        assert result is True, ValueError(func.__name__ + " " + str(np_to_tuple(result)))
+        if result is not True:
+            raise ValueError(func.__name__ + " " + str(np_to_tuple(result)))
+
     return wrapper
 
 
-def is_np_data(data, required_dtype = np.float64, required_shape = None):
+def is_np_data(data, required_dtype=np.float64, required_shape=None):
     """
     The parameter required_shape should be a tuple consists positive integers or None.
     """
@@ -33,16 +35,18 @@ def is_np_data(data, required_dtype = np.float64, required_shape = None):
 
 
 def assert_type(val, valid_type):
-    assert isinstance(val, valid_type), TypeError(val)
+    if not isinstance(val, valid_type):
+        raise TypeError(val)
 
 
 def assert_length(vals, valid_length):
-    assert len(vals) == valid_length, ValueError(vals)
+    if len(vals) != valid_length:
+        raise ValueError(vals)
 
 
 @assert_true_or_raise
 def assert_is_2D_data(data):
-    if not is_np_data(data, required_shape = (2,)):
+    if not is_np_data(data, required_shape=(2,)):
         return data
     return True
 
@@ -74,4 +78,3 @@ def assert_station_on_route(station, points, loop):
         ]):
             return True
     return station
-

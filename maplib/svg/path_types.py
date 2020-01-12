@@ -2,7 +2,6 @@ import numpy as np
 
 from maplib.svg.svg_element import Path
 from maplib.tools.assertions import assert_is_standard_route
-from maplib.tools.config_ops import digest_locals
 from maplib.tools.simple_functions import adjacent_n_tuples
 from maplib.tools.space_ops import abs_arg_pair
 from maplib.tools.space_ops import arg
@@ -18,7 +17,9 @@ class CommandPath(Path):
 
 class LineArcPath(Path):
     def __init__(self, id_name, control_points, arc_radius, loop):
-        digest_locals(self)
+        self.control_points = control_points
+        self.arc_radius = arc_radius
+        self.loop = loop
         assert_is_standard_route(control_points, loop)
         Path.__init__(self, id_name)
         self.num_arcs = len(control_points)
@@ -72,4 +73,3 @@ class YPath(LineArcPath):
         LineArcPath.__init__(self, id_name, main_control_points, arc_radius, False)
         sub_path = LineArcPath(None, sub_control_points, arc_radius, False)
         self.add_element_path(sub_path)
-

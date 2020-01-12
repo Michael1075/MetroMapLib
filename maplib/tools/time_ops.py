@@ -3,7 +3,7 @@ import time
 import maplib.parameters as params
 
 
-def timer_decorator(decorator_func = None):
+def timer_decorator(decorator_func=None):
     def decorator(func):
         def wrapper(*args, **kwargs):
             if decorator_func is None:
@@ -24,4 +24,3 @@ def timer_decorator(decorator_func = None):
             return result
         return wrapper
     return decorator
-

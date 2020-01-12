@@ -45,7 +45,7 @@ def scale_about_origin(point, scale_factor):
     return scale_factor * point
 
 
-def scale(point, scale_factor, about_point = consts.ORIGIN):
+def scale(point, scale_factor, about_point=consts.ORIGIN):
     result = point - about_point
     result = scale_about_origin(result, scale_factor)
     result += about_point
@@ -57,7 +57,7 @@ def rotate_about_origin(point, angle):
     return rotation_matrix @ point
 
 
-def rotate(point, angle, about_point = consts.ORIGIN):
+def rotate(point, angle, about_point=consts.ORIGIN):
     result = point - about_point
     result = rotate_about_origin(result, angle)
     result += about_point
@@ -80,7 +80,7 @@ def get_2D_line_func_coefficients(point, theta):
     a = np.sin(theta)
     b = -np.cos(theta)
     c = a * x + b * y
-    return (a, b, c)
+    return a, b, c
 
 
 def solve_intersection_point(point1, theta1, point2, theta2):
@@ -98,7 +98,7 @@ def solve_intersection_point(point1, theta1, point2, theta2):
 
 
 def center_of_mass(points_list):
-    return np.mean(np.array(points_list), axis = 0)
+    return np.mean(np.array(points_list), axis=0)
 
 
 def midpoint(a, b):
@@ -156,4 +156,3 @@ def get_positive_direction(h_or_v):
 def is_horizontal(direction):
     direction_num = shrink_value(get_simplified_direction(direction) // 2, 0, 2)
     return [True, False][direction_num]
-

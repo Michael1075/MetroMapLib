@@ -1,7 +1,5 @@
 from functools import reduce
-import xml.etree.ElementTree as ET
-
-import maplib.parameters as params
+import xml.etree.ElementTree as ElementTree
 
 from maplib.svg.svg_element import Defs
 from maplib.svg.svg_element import Group
@@ -28,13 +26,17 @@ class Canvas(object):
         pass
 
     def init_background(self):
-        self.root = Svg()
-        self.defs = Defs()
-        self.root.append(self.defs)
-        self.canvas = Group("canvas").flip_y()
-        self.root.append(self.canvas)
-        self.path_group = Group("paths")
-        self.define(self.path_group)
+        root = Svg()
+        defs = Defs()
+        root.append(defs)
+        canvas = Group("canvas").flip_y()
+        root.append(canvas)
+        path_group = Group("paths")
+        self.root = root
+        self.defs = defs
+        self.canvas = canvas
+        self.path_group = path_group
+        self.define(path_group)
 
     def init_tex_objs_list(self):
         self.global_tex_objs = []
@@ -60,22 +62,22 @@ class Canvas(object):
 
     def modify_json(self):
         update_generated_tex_in_json(self.global_tex_objs)
-    
-    def modify_svg_str(self, string):
-        string = params.SVG_HEAD + string
+
+    @staticmethod
+    def modify_svg_str(string):
         string = string.replace(" />", "/>")
         string = string.replace("><", ">\n<")
         return string
-    
-    def modify_svg_file(self, file_name):
+
+    @staticmethod
+    def modify_svg_file(file_name):
         with open(file_name, "r") as input_file:
             string = "".join(input_file.readlines())
-        result = self.modify_svg_str(string)
+        result = Canvas.modify_svg_str(string)
         with open(file_name, "w") as output_file:
             output_file.write(result)
 
     def write_to_file(self, file_name):
-        file_body = ET.ElementTree(self.root)
+        file_body = ElementTree.ElementTree(self.root)
         file_body.write(file_name)
-        self.modify_svg_file(file_name)
-
+        Canvas.modify_svg_file(file_name)

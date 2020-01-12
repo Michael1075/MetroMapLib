@@ -63,9 +63,9 @@ class Grid(Group):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
         self.set_style({
-            "stroke": params.GRID_COLOR,
-            "stroke-opacity": params.GRID_STROKE_OPACITY,
-            "stroke-width": params.ROUTE_STROKE_WIDTH,
+            "stroke": params.GRID_STYLE["color"],
+            "stroke-opacity": params.GRID_STYLE["stroke_opacity"],
+            "stroke-width": params.GRID_STYLE["stroke_width"],
         })
         path = self.get_path()
         self.append(path)
@@ -73,12 +73,12 @@ class Grid(Group):
     def get_path(self):
         path = Path(None)
         for k in range(*[round(val) for val in (
-            params.GRID_STEP, params.BODY_WIDTH, params.GRID_STEP
+            params.GRID_STYLE["step"], params.BODY_WIDTH, params.GRID_STYLE["step"]
         )]):
             path.move_to(np_float(k, 0))
             path.line_to(np_float(k, params.BODY_HEIGHT))
         for k in range(*[round(val) for val in (
-            params.GRID_STEP, params.BODY_HEIGHT, params.GRID_STEP
+            params.GRID_STYLE["step"], params.BODY_HEIGHT, params.GRID_STYLE["step"]
         )]):
             path.move_to(np_float(0, k))
             path.line_to(np_float(params.BODY_WIDTH, k))
@@ -123,6 +123,8 @@ class MapFrame(Group):
 
 
 class SvgPathObject(Group, Frame):
+    svg_info = None
+
     def __init__(self, id_name):
         Group.__init__(self, id_name)
         doc = minidom.parse(self.svg_info["svg_dir"])
@@ -149,4 +151,3 @@ class SvgPathObject(Group, Frame):
 
 class ShanghaiMetroLogo(SvgPathObject):
     svg_info = params.METRO_LOGO_INFO
-
