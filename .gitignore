@@ -1,8 +1,9 @@
 *.pyc
 *.bat
-\.idea/
+.idea/
 venv/
 
 note.txt
 construct_json_.py
 maplib/files/Shanghai/*_copy.json
+figure.png
