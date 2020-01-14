@@ -3,6 +3,7 @@ import maplib.parameters as params
 from maplib.svg.canvas import Canvas
 from maplib.svg.geographic_map import GeographicMap
 from maplib.svg.tex_instance import GeographicName
+from maplib.svg.tex_instance import SignName
 from maplib.svg.tex_instance import StationName
 from maplib.svg.misc import BodyRectangle
 from maplib.svg.misc import FullRectangle
@@ -30,6 +31,7 @@ class MapBody(Group, Constructor):
             GeographicName("geographic_name", self.name_objs_dict),
             WebSystem("web_system", self.metro_objs, self.station_objs),
             StationName("station_name", self.station_objs),
+            SignName("sign_name", self.metro_objs),
         )
 
 

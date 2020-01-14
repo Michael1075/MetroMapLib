@@ -4,6 +4,7 @@ import maplib.parameters as params
 
 from maplib.svg.main_project import Project
 from maplib.tools.file_tools import get_file_extension
+from maplib.tools.file_tools import get_relative_path
 from maplib.tools.time_ops import timer_decorator
 
 
@@ -15,7 +16,7 @@ class MakeProject(object):
             raise NotImplementedError(extension)
         self.make_project()
         if params.PRINT_FILE_READY_MSG:
-            print(params.FILE_READY_MSG.format(output_file_name))
+            print(params.FILE_READY_MSG.format(get_relative_path(output_file_name)))
         if params.OPEN_OUTPUT_FILE_AT_ONCE:
             self.open_output_file()
 

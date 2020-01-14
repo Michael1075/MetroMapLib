@@ -5,9 +5,9 @@ from maplib.svg.svg_element import Defs
 from maplib.svg.svg_element import Group
 from maplib.svg.svg_element import Svg
 from maplib.svg.path_types import CommandPath
+from maplib.tools.json_file_tools import update_generated_tex_in_json
 from maplib.tools.simple_functions import merge_dicts
 from maplib.tools.simple_functions import sort_dict_by_key
-from maplib.tools.tex_json_file_tools import update_generated_tex_in_json
 
 
 class Canvas(object):

@@ -13,7 +13,8 @@ from maplib.utils.color import Color
 PROJECT_CITY_NAME = "Shanghai"
 
 # dirs
-THIS_DIR = os.path.dirname(os.path.realpath(__file__))
+THIS_DIR = os.path.dirname(os.path.abspath(__file__))
+PROGRAM_DIR = os.path.dirname(THIS_DIR)
 FILE_DIR = os.path.join(THIS_DIR, "files")
 PROJECT_DIR = os.path.join(FILE_DIR, PROJECT_CITY_NAME)
 TEX_CACHE_DIR = os.path.join(FILE_DIR, "tex_cache")
@@ -57,7 +58,7 @@ REMOVE_SUCCESSFULLY_MSG = "Successfully removed"
 REMOVE_UNSUCCESSFULLY_MSG = "Does not exist"
 TEX_GENERATE_MEG = "Generating tex..."
 TEX_REMOVE_MEG = "Removing tex..."
-INITIALIZE_MSG = "Initializing {0}..."
+FORMAT_MSG = "Formatting {0}..."
 COPY_MSG = "Copying {0}..."
 COPY_FINISH_MSG = "Successfully copied to {0}"
 FILE_READY_MSG = "File ready at {0}"
@@ -149,6 +150,14 @@ STATION_FRAME_STYLE = {
     "fill_color": consts.WHITE,
     "fill_opacity": 1.0,
 }
+SIGN_NAME_STYLE = {
+    "number_frame_side_length": 3.0,
+    "strings_frame_side_buff": 0.4,
+    "corner_radius": 0.5,
+    "fill_opacity": 0.8,
+}
+
+# tex styles
 STATION_NAME_TEX_STYLE = {
     "small_buff": 0.1,
     "big_buff": 0.3,
@@ -158,13 +167,13 @@ STATION_NAME_TEX_STYLE = {
         consts.CHN: {
             "tex_box_index": 0,
             "scale_factor": 1.4,
-            "font_cmd": "youyuan",
+            "font_type": "youyuan",
             "color": TEX_COLORS["station"]["main"],
         },
         consts.ENG: {
             "tex_box_index": 1,
             "scale_factor": 1.0,
-            "font_cmd": "sffamily",
+            "font_type": "sffamily",
             "color": TEX_COLORS["station"]["sub"],
         },
     },
@@ -182,13 +191,13 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
             consts.CHN: {
                 "tex_box_index": 0,
                 "scale_factor": 2.5,
-                "font_cmd": "songti",
+                "font_type": "songti",
                 "color": TEX_COLORS["district"],
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.4,
-                "font_cmd": "rmfamily",
+                "font_type": "rmfamily",
                 "color": TEX_COLORS["district"],
             },
         },
@@ -200,13 +209,13 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
             consts.CHN: {
                 "tex_box_index": 0,
                 "scale_factor": 2.0,
-                "font_cmd": "songti",
+                "font_type": "songti",
                 "color": TEX_COLORS["water_area"],
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 2.0,
-                "font_cmd": "rmfamily",
+                "font_type": "rmfamily",
                 "color": TEX_COLORS["water_area"],
             },
         },
@@ -218,14 +227,43 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
             consts.CHN: {
                 "tex_box_index": 0,
                 "scale_factor": 2.2,
-                "font_cmd": "songti",
+                "font_type": "songti",
                 "color": TEX_COLORS["water_area"],
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.4,
-                "font_cmd": "rmfamily",
+                "font_type": "rmfamily",
                 "color": TEX_COLORS["water_area"],
+            },
+        },
+    },
+}
+SIGN_TEX_STYLE = {
+    "number": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": 0.0,
+        "languages": {
+            consts.ENG: {
+                "tex_box_index": 0,
+                "scale_factor": 3.0,
+                "font_type": "sffamily",
+            },
+        },
+    },
+    "strings": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": -0.2,
+        "languages": {
+            consts.CHN: {
+                "tex_box_index": 0,
+                "scale_factor": 2.0,
+                "font_type": "heiti",
+            },
+            consts.ENG: {
+                "tex_box_index": 1,
+                "scale_factor": 1.4,
+                "font_type": "sffamily",
             },
         },
     },

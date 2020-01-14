@@ -8,11 +8,22 @@ from maplib.svg.tex import TexFileWriter
 from maplib.tools.file_tools import copy_file
 from maplib.tools.file_tools import dump_dict
 from maplib.tools.file_tools import dump_tex_dict
-from maplib.tools.file_tools import get_global_tex_dict
-from maplib.tools.file_tools import get_input_dict
+from maplib.tools.file_tools import get_relative_path
 from maplib.tools.simple_functions import remove_list_redundancies
 from maplib.tools.time_ops import timer_decorator
 from maplib.utils.constructor import Constructor
+
+
+def get_empty_font_type_dict():
+    return {font_type: {} for font_type in params.TEX_FONT_CMDS}
+
+
+def get_global_tex_dict():
+    return params.GLOBAL_TEX_DICT.copy()
+
+
+def get_input_dict():
+    return params.INPUT_DATABASE_DICT.copy()
 
 
 def generate_tex_in_json(generated_tex_objs, global_tex_dict):
@@ -58,8 +69,8 @@ def update_generated_tex_in_json(global_tex_objs):
 def format_tex_json():
     """
     global_tex_dict
-        global_file_dict
-        dict_key: tex_font (str)
+        "file": global_file_dict
+        dict_key: font_type (str)
         dict_val: font_file_dict (dict)
             font_file_dict
             dict_key: string (str)
@@ -71,8 +82,8 @@ def format_tex_json():
                     "x": x_list (str or float) (contains List(float), len n)
                     "y": y_list (str or float) (contains List(float), len n)
                 }
-        global_path_dict
-        dict_key: tex_font (str)
+        "path": global_path_dict
+        dict_key: font_type (str)
         dict_val: font_path_dict (dict)
             font_path_dict
             dict_key: path_id_num (str)*
@@ -81,24 +92,26 @@ def format_tex_json():
     """
     file_name = params.TEX_JSON_DIR
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.INITIALIZE_MSG.format(file_name))
+        print(params.FORMAT_MSG.format(get_relative_path(file_name)))
     global_tex_dict = get_global_tex_dict()
-    new_global_tex_dict = {
-        "file": {},
-        "path": {},
-    }
-    for tex_font, font_file_dict in global_tex_dict["file"].items():
+    new_global_file_dict = get_empty_font_type_dict()
+    for font_type, font_file_dict in global_tex_dict["file"].items():
         new_font_file_dict = {}
         for string, tex_file_dict in font_file_dict.items():
             new_tex_file_dict = init_tex_file_dict(tex_file_dict)
             new_font_file_dict[string] = new_tex_file_dict
-        new_global_tex_dict["file"][tex_font] = new_font_file_dict
-    for tex_font, font_path_dict in global_tex_dict["path"].items():
+        new_global_file_dict[font_type] = new_font_file_dict
+    new_global_path_dict = get_empty_font_type_dict()
+    for font_type, font_path_dict in global_tex_dict["path"].items():
         new_font_path_dict = {}
         for path_id_num, path_string in font_path_dict.items():
             new_path_string = path_string
             new_font_path_dict[path_id_num] = new_path_string
-        new_global_tex_dict["path"][tex_font] = new_font_path_dict
+        new_global_path_dict[font_type] = new_font_path_dict
+    new_global_tex_dict = {
+        "file": new_global_file_dict,
+        "path": new_global_path_dict,
+    }
     dump_tex_dict(new_global_tex_dict)
 
 
@@ -110,16 +123,16 @@ def init_tex_file_dict(tex_file_dict):
 def create_tex_json_transcript(file_name_suffix):
     old_file_name = params.TEX_JSON_DIR
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.COPY_MSG.format(old_file_name))
+        print(params.COPY_MSG.format(get_relative_path(old_file_name)))
     new_file_name = old_file_name.replace(".json", file_name_suffix + ".json")
     copy_file(old_file_name, new_file_name)
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.COPY_FINISH_MSG.format(new_file_name))
+        print(params.COPY_FINISH_MSG.format(get_relative_path(new_file_name)))
 
 
-def get_single_tex(tex_obj, generate_file, use_current_data):
+def get_single_tex(tex_obj, generate_file):
     tex_string = tex_obj.tex_string
-    result = tex_obj.get_dict_if_existed(use_current_data)
+    result = tex_obj.get_file_dict_if_existed()
     if generate_file:
         if result is None:
             result_msg = params.GENERATE_SUCCESSFULLY_MSG
@@ -159,7 +172,7 @@ def modify_tex_json(*string_tuples):
     with ft.ThreadPoolExecutor() as executor:
         filtered_generated_tex_objs = [
             tex_obj for tex_obj in executor.map(
-                lambda tex_obj: get_single_tex(tex_obj, True, global_tex_dict),
+                lambda tex_obj: get_single_tex(tex_obj, True),
                 generated_tex_objs
             ) if tex_obj is not None
         ]
@@ -170,7 +183,7 @@ def modify_tex_json(*string_tuples):
         print(params.TEX_REMOVE_MEG)
     filtered_removed_tex_objs = [
         tex_obj for tex_obj in map(
-            lambda tex_obj: get_single_tex(tex_obj, False, global_tex_dict),
+            lambda tex_obj: get_single_tex(tex_obj, False),
             removed_tex_objs
         ) if tex_obj is not None
     ]
@@ -212,7 +225,7 @@ def string_tuples_to_tex_objs(string_tuples):
 def format_input_json():
     file_name = params.INPUT_JSON_DIR
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.INITIALIZE_MSG.format(file_name))
+        print(params.FORMAT_MSG.format(get_relative_path(file_name)))
     input_dict = get_input_dict()
     new_metro_database = []
     for metro_dict in input_dict["metro_database"]:
@@ -245,8 +258,8 @@ def format_input_json():
 def create_input_json_transcript(file_name_suffix):
     old_file_name = params.INPUT_JSON_DIR
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.COPY_MSG.format(old_file_name))
+        print(params.COPY_MSG.format(get_relative_path(old_file_name)))
     new_file_name = old_file_name.replace(".json", file_name_suffix + ".json")
     copy_file(old_file_name, new_file_name)
     if params.PRINT_FILE_MODIFYING_MSG:
-        print(params.COPY_FINISH_MSG.format(new_file_name))
+        print(params.COPY_FINISH_MSG.format(get_relative_path(new_file_name)))

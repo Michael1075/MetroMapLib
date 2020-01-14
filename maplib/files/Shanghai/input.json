@@ -5,10 +5,15 @@
 "eng": "Line 1",
 "chn": "1号线"
 },
-"serial_num": 1,
+"layer_num": 1,
 "color": "250 0 46",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"121 120",
+"195 292"
+],
 "stations_data": [
 "111 104 1 3 - Humin Road                     沪闵路",
 "117 110 1 7 - Xinzhuang                      莘庄",
@@ -46,10 +51,15 @@
 "eng": "Line 2",
 "chn": "2号线"
 },
-"serial_num": 2,
+"layer_num": 2,
 "color": "125 255 0",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 88 181",
+"355  89"
+],
 "stations_data": [
 " 92 181 0 6 - East Xujing                            徐泾东",
 " 98 181 0 2 - Hongqiao Railway Station               虹桥火车站",
@@ -89,10 +99,15 @@
 "eng": "Line 3",
 "chn": "3号线"
 },
-"serial_num": 3,
+"layer_num": 3,
 "color": "250 214 0",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"153 135",
+"219 289"
+],
 "stations_data": [
 "140 132 0 - - -                        上海南站",
 "149 132 0 6 - Shilong Road             石龙路",
@@ -131,10 +146,15 @@
 "eng": "Line 4",
 "chn": "4号线"
 },
-"serial_num": 4,
+"layer_num": 4,
 "color": "35 0 245",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "o",
+"names_coord": [
+"154 194",
+"244 187"
+],
 "stations_data": [
 "151 164 2 - - -                 宜山路",
 "151 172 2 - - -                 虹桥路",
@@ -170,10 +190,15 @@
 "eng": "Line 5",
 "chn": "5号线"
 },
-"serial_num": 5,
+"layer_num": 5,
 "color": "130 56 255",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"117 90",
+"124 25"
+],
 "stations_data": [
 "118 110 1 - - -                   莘庄",
 "114 102 2 0 - Chunshen Road       春申路",
@@ -197,10 +222,15 @@
 "eng": "Line 6",
 "chn": "6号线"
 },
-"serial_num": 6,
+"layer_num": 6,
 "color": "224 0 184",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"297 246",
+"215 123"
+],
 "stations_data": [
 "286 260 0 2 - Gangcheng Road                     港城路",
 "296 254 3 1 - North Waigaoqiao Free Trade Zone   外高桥保税区北",
@@ -238,10 +268,15 @@
 "eng": "Line 7",
 "chn": "7号线"
 },
-"serial_num": 7,
+"layer_num": 7,
 "color": "255 79 0",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"248 136",
+"155 296"
+],
 "stations_data": [
 "264 148 2 2 - Huamu Road          花木路",
 "258 144 0 - - -                   龙阳路",
@@ -284,10 +319,15 @@
 "eng": "Line 8",
 "chn": "8号线"
 },
-"serial_num": 8,
+"layer_num": 8,
 "color": "3 222 245",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"188  76",
+"261 254"
+],
 "stations_data": [
 "191  74 2 0 - Shengdu Highway   沈杜公路",
 "191  78 2 0 - Lianhang Road     联航路",
@@ -326,10 +366,15 @@
 "eng": "Line 9",
 "chn": "9号线"
 },
-"serial_num": 9,
+"layer_num": 9,
 "color": "133 242 250",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 59  86",
+"344 180"
+],
 "stations_data": [
 " 62  86 2 0 - Songjiang South Railway Station 松江南站",
 " 62  96 2 0 - Zuibaichi Park                  醉白池",
@@ -373,10 +418,15 @@
 "eng": "Line 10",
 "chn": "10号线"
 },
-"serial_num": 10,
+"layer_num": 10,
 "color": "191 168 255",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "y",
+"names_coord": [
+"300 261",
+"121 170"
+],
 "stations_data": [
 "296 261 0 2 - Jilong Road                 基隆路",
 "286 261 0 - - -                           港城路",
@@ -422,10 +472,16 @@
 "eng": "Line 11",
 "chn": "11号线"
 },
-"serial_num": 11,
+"layer_num": 11,
 "color": "111 10 46",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "y",
+"names_coord": [
+"290  86",
+" 85 290",
+" 32 265"
+],
 "stations_data": [
 "302  89 0 2 - Disney Resort                 迪士尼",
 "281  89 0 6 - Kangxin Highway               康新公路",
@@ -475,10 +531,15 @@
 "eng": "Line 12",
 "chn": "12号线"
 },
-"serial_num": 12,
+"layer_num": 12,
 "color": "0 166 65",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"323 190",
+"113 133"
+],
 "stations_data": [
 "320 184 2 - - -                             金海路",
 "313 200 0 1 - Shenjiang Road                申江路",
@@ -519,10 +580,15 @@
 "eng": "Line 13",
 "chn": "13号线"
 },
-"serial_num": 13,
+"layer_num": 13,
 "color": "242 125 255",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 83 195",
+"294 113"
+],
 "stations_data": [
 " 86 189 2 1 - Zhuguang Road                   诸光路",
 " 86 195 2 0 - Yunle Road                      运乐路",
@@ -567,10 +633,15 @@
 "eng": "Line 14",
 "chn": "14号线"
 },
-"serial_num": 14,
+"layer_num": 14,
 "color": "71 89 0",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 88 227",
+"320 173"
+],
 "stations_data": [
 " 92 227 0 2 - Fengbang          封浜",
 "100 227 0 2 - Jinyuanwu Road    金园五路",
@@ -610,10 +681,15 @@
 "eng": "Line 15",
 "chn": "15号线"
 },
-"serial_num": 15,
+"layer_num": 15,
 "color": "105 140 126",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"158 267",
+"127  71"
+],
 "stations_data": [
 "155 272 2 - - -                                         顾村公园",
 "155 260 2 0 - Jinqiu Road                               锦秋路",
@@ -652,10 +728,15 @@
 "eng": "Line 16",
 "chn": "16号线"
 },
-"serial_num": 16,
+"layer_num": 16,
 "color": "143 255 179",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"265 128",
+"361  28"
+],
 "stations_data": [
 "258 141 0 - - -                龙阳路",
 "266 135 3 - * -                -",
@@ -678,10 +759,15 @@
 "eng": "Line 17",
 "chn": "17号线"
 },
-"serial_num": 17,
+"layer_num": 17,
 "color": "179 102 128",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"94 188",
+"14 161"
+],
 "stations_data": [
 "98 182 0 - - -                   虹桥火车站",
 "86 188 0 - - -                   诸光路",
@@ -705,10 +791,15 @@
 "eng": "Line 18",
 "chn": "18号线"
 },
-"serial_num": 18,
+"layer_num": 18,
 "color": "179 125 62",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"188 259",
+"247  67"
+],
 "stations_data": [
 "188 262 0 2 - Kangning Road                                康宁路",
 "198 262 0 - - -                                            通河新村",
@@ -748,10 +839,15 @@
 "eng": "Line 19",
 "chn": "19号线"
 },
-"serial_num": 19,
+"layer_num": 19,
 "color": "57 158 80",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"208 277",
+"141  77"
+],
 "stations_data": [
 "208 280 0 2 - Yangtai Road                              杨泰路",
 "214 276 2 0 - Langang Road                              兰岗路",
@@ -793,10 +889,15 @@
 "eng": "Line 20",
 "chn": "20号线"
 },
-"serial_num": 20,
+"layer_num": 20,
 "color": "52 87 169",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"138 233",
+"273 250"
+],
 "stations_data": [
 "142 233 0 2 - Jinchang Road        金昌路",
 "150 233 0 - - -                    上海西站",
@@ -821,10 +922,15 @@
 "eng": "Line 21",
 "chn": "21号线"
 },
-"serial_num": 21,
+"layer_num": 21,
 "color": "218 174 51",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"300 211",
+"322  85"
+],
 "stations_data": [
 "295 208 0 - - -                    东靖路",
 "302 200 2 - - -                    杨高北路",
@@ -848,10 +954,15 @@
 "eng": "Line 23",
 "chn": "23号线"
 },
-"serial_num": 23,
+"layer_num": 23,
 "color": "240 133 101",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"162 138",
+" 88  68"
+],
 "stations_data": [
 "167 156 2 - - -                         上海体育场",
 "159 144 2 - - -                         龙漕路",
@@ -882,10 +993,14 @@
 "eng": "Pujiang Line",
 "chn": "浦江线"
 },
-"serial_num": 24,
+"layer_num": 24,
 "color": "177 177 179",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"195 62"
+],
 "stations_data": [
 "191 73 2 - - -                沈杜公路",
 "198 71 0 1 - Sanlu Highway    三鲁公路",
@@ -900,10 +1015,15 @@
 "eng": "Chongming Line",
 "chn": "崇明线"
 },
-"serial_num": 25,
+"layer_num": 25,
 "color": "107 193 154",
 "sub_color": null,
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"307 190",
+"374 293"
+],
 "stations_data": [
 "312 184 2 - - -                 金吉路",
 "312 200 2 - - -                 申江路",
@@ -922,10 +1042,15 @@
 "eng": "Airport Line",
 "chn": "机场联络线"
 },
-"serial_num": 26,
+"layer_num": 26,
 "color": "186 158 55",
 "sub_color": "None",
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 97 168",
+"347  67"
+],
 "stations_data": [
 "102 179 2 - - -                             虹桥2号航站楼",
 "102 156 2 - - -                             七宝",
@@ -947,10 +1072,15 @@
 "eng": "Jiamin Line",
 "chn": "嘉闵线"
 },
-"serial_num": 27,
+"layer_num": 27,
 "color": "16 48 143",
 "sub_color": "None",
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+" 93 300",
+"110 115"
+],
 "stations_data": [
 " 93 297 0 - - -                        嘉定北",
 "112 283 2 0 - Jiajian Highway          嘉戬公路",
@@ -974,10 +1104,15 @@
 "eng": "Maglev Line",
 "chn": "磁悬浮"
 },
-"serial_num": -1,
+"layer_num": -1,
 "color": "46 128 139",
 "sub_color": "214 184 50",
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"273 138",
+"354  81"
+],
 "stations_data": [
 "258 142 0 - - - 龙阳路",
 "266 138 3 - * - -",
@@ -993,10 +1128,15 @@
 "eng": "Jinshan Railway",
 "chn": "金山铁路"
 },
-"serial_num": 0,
+"layer_num": 0,
 "color": "121 86 93",
 "sub_color": "None",
+"name_color": "255 255 255",
 "route_type": "l",
+"names_coord": [
+"130 114",
+" 56  20"
+],
 "stations_data": [
 "140 131 1 - - -              上海南站",
 "104  95 1 7 - Chunshen       春申",
@@ -1039,7 +1179,7 @@
 "river_name": [
 "300 270 Yangtze River 长江",
 "128  55 Huangpu River 黄浦江",
-"122 200 Suzhou Creek  苏州河"
+"122 200 Wusong River  吴淞江"
 ],
 "lake_name": [
 "  2 174 Dianshan Lake 淀山湖",

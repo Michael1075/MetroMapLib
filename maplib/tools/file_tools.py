@@ -9,6 +9,10 @@ def get_file_extension(file_name):
     return os.path.splitext(file_name)[1]
 
 
+def get_relative_path(file_name):
+    return os.path.relpath(file_name, params.PROGRAM_DIR)
+
+
 def dump_dict(obj, file_name, indent=0, sort_keys=True):
     """
     Be careful that his function can cover json data.
@@ -30,27 +34,3 @@ def copy_file(old_file_name, new_file_name):
         os.devnull
     ]
     os.system(" ".join(commands))
-
-
-def get_global_tex_dict(use_current_data=False):
-    if use_current_data is True:
-        with open(params.TEX_JSON_DIR, "r", encoding=consts.UTF_8) as input_file:
-            return json.load(input_file)
-    if use_current_data is False:
-        return params.GLOBAL_TEX_DICT.copy()
-    return use_current_data
-
-
-def get_global_file_dict(use_current_data=False):
-    return get_global_tex_dict(use_current_data)["file"]
-
-
-def get_global_path_dict(use_current_data=False):
-    return get_global_tex_dict(use_current_data)["path"]
-
-
-def get_input_dict(use_current_data=False):
-    if use_current_data:
-        with open(params.INPUT_JSON_DIR, "r", encoding=consts.UTF_8) as input_file:
-            return json.load(input_file)
-    return params.INPUT_DATABASE_DICT.copy()

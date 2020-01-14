@@ -9,8 +9,6 @@ import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
 from maplib.tools.assertions import assert_type
-from maplib.tools.file_tools import get_global_file_dict
-from maplib.tools.file_tools import get_global_path_dict
 from maplib.tools.numpy_type_tools import np_float
 from maplib.tools.simple_functions import get_path_id_name
 from maplib.tools.simple_functions import get_path_id_num_str
@@ -25,11 +23,11 @@ class TexFileBaseWriter(object):
     """
     Inspired by 3b1b/manim.
     """
-    def __init__(self, string, font_type, tex_string):
+    def __init__(self, tex_string):
         new_body = params.TEMPLATE_TEX_FILE_BODY.replace(params.TEX_TO_REPLACE, tex_string)
         self.tex_string = tex_string
         self.new_body = new_body
-        file_name_body = os.path.join(params.TEX_CACHE_DIR, font_type + string)
+        file_name_body = os.path.join(params.TEX_CACHE_DIR, str(hash(tex_string)))
         svg_file_name = file_name_body + ".svg"
         tex_file = self.generate_tex_file(svg_file_name)
         dvi_file = TexFileBaseWriter.tex_to_dvi(tex_file)
@@ -89,13 +87,15 @@ class TexFileBaseWriter(object):
 
 
 class TexFileWriter(object):
-    def __init__(self, string, font_type):
+    def __init__(self, string, font_type, tex_dict_cache=None):
         assert_type(string, str)
         if font_type not in params.TEX_FONT_CMDS:
             raise ValueError(font_type)
         self.string = string
         self.font_type = font_type
         self.tex_string = "{{\\{0} {1}}}".format(font_type, string)
+        if tex_dict_cache is not None:
+            self.tex_dict_cache = tex_dict_cache
 
     def __eq__(self, obj):
         return reduce(op.and_, [
@@ -174,36 +174,44 @@ class TexFileWriter(object):
         tex_file_dict = TexFileWriter.tex_file_lists_to_dict(viewbox_list, href_num_list, x_list, y_list)
         return tex_file_dict, tex_path_dict
 
-    def get_dict_if_existed(self, use_current_data=False):
-        global_file_dict = get_global_file_dict(use_current_data)
-        font_file_dict = global_file_dict[self.font_type]
-        if self.string in font_file_dict.keys():
+    def get_source_dict(self):
+        if hasattr(self, "tex_dict_cache"):
+            return self.tex_dict_cache
+        return params.GLOBAL_TEX_DICT.copy()
+
+    def get_file_dict_if_existed(self):
+        source_dict = self.get_source_dict()
+        font_file_dict = source_dict["file"][self.font_type]
+        if self.string in font_file_dict:
             return font_file_dict[self.string]
         return None
 
     def write_tex_file(self, tex_file_dict):
         if tex_file_dict:
-            global_path_dict = get_global_path_dict()
+            source_dict = self.get_source_dict()
+            global_path_dict = source_dict["path"]
             font_path_dict = global_path_dict[self.font_type]
             href_num_list = tex_file_dict["h"].split()
             tex_path_dict = {key: font_path_dict[key] for key in href_num_list}
         else:
-            svg_file = TexFileBaseWriter(self.string, self.font_type, self.tex_string).svg_file
+            base_writer = TexFileBaseWriter(self.tex_string)
+            svg_file = base_writer.svg_file
             tex_file_dict, tex_path_dict = TexFileWriter.parse_svg_file(svg_file)
         self.tex_file_dict = tex_file_dict
         self.tex_path_dict = tex_path_dict
         return self
 
     def write_directly(self):
-        tex_file_dict = self.get_dict_if_existed()
+        tex_file_dict = self.get_file_dict_if_existed()
         self.write_tex_file(tex_file_dict)
         return self
 
 
-class Tex(Alignable, TexFileWriter):
-    def __init__(self, string, font_type, additional_scale_factor):
+class Tex(TexFileWriter, Alignable, Group):
+    def __init__(self, string, font_type, additional_scale_factor, tex_dict_cache):
         self.additional_scale_factor = additional_scale_factor
-        TexFileWriter.__init__(self, string, font_type)
+        TexFileWriter.__init__(self, string, font_type, tex_dict_cache)
+        Group.__init__(self, None)
         self.write_directly()
         self.parse_dict()
         self.init_size_attrs()
@@ -238,22 +246,30 @@ class Tex(Alignable, TexFileWriter):
         x_prime, y_prime = self.get_critical_point(consts.LD)
         y_prime = params.FULL_HEIGHT - self.height - y_prime
         return x_prime - x_min * self.scale_factor, y_prime - y_min * self.scale_factor
+
+    def setup_group(self, aligned_point, aligned_direction):
+        scale_factor = self.scale_factor
+        shift_vector = self.compute_shift_vector(aligned_point, aligned_direction)
+        self.scale_and_shift(scale_factor, shift_vector)
+        for path_id, relative_coord in self.tex_uses_list:
+            self.use(path_id, relative_coord)
+        return self
         
 
 class TexBox(Alignable):
-    def __init__(self, tex_objs, aligned_point, aligned_direction, buff, box_format):
-        for tex_obj in tex_objs:
+    def __init__(self, tex_obj_list, aligned_point, aligned_direction, buff, box_format):
+        for tex_obj in tex_obj_list:
             assert_type(tex_obj, Tex)
-        self.tex_objs = tex_objs.copy()
+        self.tex_obj_list = tex_obj_list.copy()
         if box_format == consts.VERTICAL:
-            tex_objs.reverse()
+            tex_obj_list.reverse()
         positive_direction = get_positive_direction(box_format)
         perpendicular_direction = consts.RU - positive_direction
-        box_size_list = [tex_obj.box_size for tex_obj in tex_objs]
+        box_size_list = [tex_obj.box_size for tex_obj in tex_obj_list]
         box_size = reduce(op.add, [
             np.max(box_size_list, axis=0) * perpendicular_direction,
             np.sum(box_size_list, axis=0) * positive_direction,
-            (len(tex_objs) - 1) * buff * positive_direction
+            (len(tex_obj_list) - 1) * buff * positive_direction
         ])
         self.set_box_size(box_size)
         self.align(aligned_point, aligned_direction)
@@ -265,7 +281,7 @@ class TexBox(Alignable):
                 np.sum(box_size_list[:k], axis=0) * positive_direction,
                 k * buff * positive_direction,
             ])
-            for k in range(len(tex_objs))
+            for k in range(len(tex_obj_list))
         ]
         if box_format == consts.VERTICAL:
             self.partial_aligned_points.reverse()
@@ -278,21 +294,12 @@ class TexGroup(Group):
         for group_obj in group_objs:
             self.append(group_obj)
 
-    @staticmethod
-    def construct_tex_partial_group(tex_obj, aligned_point, aligned_direction):
-        scale_factor = tex_obj.scale_factor
-        shift_vector = tex_obj.compute_shift_vector(aligned_point, aligned_direction)
-        tex_partial_group = Group(None).scale_and_shift(scale_factor, shift_vector)
-        for path_id, relative_coord in tex_obj.tex_uses_list:
-            tex_partial_group.use(path_id, relative_coord)
-        return tex_partial_group
-
     def append_tex_box(self, tex_box):
         for group_obj, tex_obj, partial_aligned_point in zip(
-            self.group_objs, tex_box.tex_objs, tex_box.partial_aligned_points
+            self.group_objs, tex_box.tex_obj_list, tex_box.partial_aligned_points
         ):
-            tex_partial_group = TexGroup.construct_tex_partial_group(
-                tex_obj, partial_aligned_point, tex_box.partial_aligned_direction
+            tex_partial_group = tex_obj.setup_group(
+                partial_aligned_point, tex_box.partial_aligned_direction
             )
             group_obj.append(tex_partial_group)
         return self

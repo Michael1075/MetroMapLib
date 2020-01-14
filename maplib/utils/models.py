@@ -66,36 +66,41 @@ class StationPoint(Circle):
 class Metro(object):
     """
     About input:
-    serial_num: an int;
+    layer_num: an int;
     metro_name_dict: a tuple with different languages;
     main_color: a Color obj;
     sub_color: either a Color obj, None or "None";
+    name_color: a Color obj;
     route_type: a str in ("l", "o", "y");
+    names_coord: a list which contains coords of names of the metro;
     stations_data: an array-like database which contains 7 elements as the following format:
-        tuple(
-            station_x_coord: an int,
-            station_y_coord: an int,
-            simplified_direction: an integer in range(4),
-            label_simple_direction: an integer in range(8),
-            sign: either "*", "#" or "^" (
-                if "*", the station_obj will not be built;
-                if "#" or "^", a y-type route will be built
-            ),
-            station_name_eng: a str,
-            station_name_chn: a str
-        ).
+        station_x_coord: an int,
+        station_y_coord: an int,
+        simplified_direction: an integer in range(4),
+        label_simple_direction: an integer in range(8),
+        sign: either "*", "#" or "^" (
+            if "*", the station_obj will not be built;
+            if "#" or "^", a y-type route will be built
+        ),
+        station_name_eng: a str,
+        station_name_chn: a str.
     """
-    def __init__(self, serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data):
-        self.serial_num = serial_num
+    def __init__(self, layer_num, metro_name_dict, main_color, sub_color, name_color,
+            route_type, names_coord, stations_data):
+        self.layer_num = layer_num
         self.metro_name_dict = metro_name_dict
         self.main_color = main_color
         self.sub_color = sub_color
+        self.name_color = name_color
         self.route_type = route_type
+        self.names_coord = names_coord
         self.stations_data = stations_data
-        self.route_id_name = "r" + str(serial_num)
-        self.mask_id_name = "m" + str(serial_num)
-        self.frame_id_name = "n" + str(serial_num)
-        self.point_id_name = "p" + str(serial_num)
+        layer_num_str = str(layer_num)
+        self.route_id_name = "r" + layer_num_str
+        self.mask_id_name = "m" + layer_num_str
+        self.frame_id_name = "n" + layer_num_str
+        self.point_id_name = "p" + layer_num_str
+        self.sign_id_name = "s" + layer_num_str
         self.init_dicts()
         self.digest_stations_data()
         if self.route_type == "y":
@@ -227,6 +232,18 @@ class Metro(object):
         self.coord_to_direction_dict[np_to_tuple(append_point)] = append_direction
         return append_point
 
+    def get_name_dict(self):
+        eng_name = self.metro_name_dict[consts.ENG]
+        if eng_name.startswith("Line "):
+            return {
+                consts.ENG: eng_name.split()[1],
+            }
+        return self.metro_name_dict
+
+    def get_name_type(self):
+        name_dict = self.get_name_dict()
+        return "number" if len(name_dict) == 1 else "strings"
+
     def get_route(self):
         id_name = self.route_id_name
         arc_radius = params.ROUTE_STYLE["arc_radius"]
@@ -320,7 +337,7 @@ class Station(object):
         return self
 
 
-class SimpleNameModel(object):
+class SimpleName(object):
     def __init__(self, x_coord, y_coord, name_eng, name_chn):
         self.name_dict = {
             consts.ENG: name_eng,
@@ -330,3 +347,13 @@ class SimpleNameModel(object):
 
     def get_name_dict(self):
         return self.name_dict
+
+
+class MetroName(object):
+    def __init__(self, metro_obj, coord):
+        self.metro_obj = metro_obj
+        self.center_point = coord
+        self.color = metro_obj.name_color
+
+    def get_name_dict(self):
+        return self.metro_obj.get_name_dict()

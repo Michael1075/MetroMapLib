@@ -7,13 +7,13 @@ from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import center_of_mass
 from maplib.utils.color import Color
 from maplib.utils.models import Metro
-from maplib.utils.models import SimpleNameModel
+from maplib.utils.models import SimpleName
 from maplib.utils.models import Station
 
 
 class Constructor(object):
     def __init__(self):
-        self.input_dict = params.INPUT_DATABASE_DICT
+        self.input_dict = params.INPUT_DATABASE_DICT.copy()
         self.all_stations_data_dict = {}
         self.metro_objs = self.build_metros()
         self.station_coord_tuples = list(self.all_stations_data_dict.keys())
@@ -88,7 +88,7 @@ class Constructor(object):
     @staticmethod
     def get_metro_data(metro_dict):
         metro_name_dict = metro_dict["name"]
-        serial_num = metro_dict["serial_num"]
+        layer_num = metro_dict["layer_num"]
         color_str = metro_dict["color"]
         main_color = Color(*string_to_nums(color_str))
         sub_color_str = metro_dict["sub_color"]
@@ -96,27 +96,39 @@ class Constructor(object):
             sub_color = Color(*string_to_nums(sub_color_str))
         else:
             sub_color = sub_color_str
+        name_color_str = metro_dict["name_color"]
+        name_color = Color(*string_to_nums(name_color_str))
         route_type = metro_dict["route_type"]
+        names_coord = []
+        for names_coord_str in metro_dict["names_coord"]:
+            name_coord = Constructor.string_to_vals(names_coord_str)
+            names_coord.append(name_coord)
         stations_data = []
         for station_data_str in metro_dict["stations_data"]:
             station_data = Constructor.string_to_vals(station_data_str, 7, 5, (2, 3))
             stations_data.append(station_data)
-        return serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data
+        return layer_num, metro_name_dict, main_color, sub_color, name_color, \
+            route_type, names_coord, stations_data
 
     @staticmethod
-    def format_metro_dict(serial_num, metro_name_dict, main_color, sub_color, route_type, stations_data):
+    def format_metro_dict(layer_num, metro_name_dict, main_color, sub_color, name_color,
+            route_type, names_coord, stations_data):
         color_str = main_color.simple_str()
         if sub_color is not None and sub_color != "None":
             sub_color_str = sub_color.simple_str()
         else:
             sub_color_str = sub_color
+        name_color_str = name_color.simple_str()
+        names_coord_strs = Constructor.format_list_with_strs(names_coord)
         stations_data_strs = Constructor.format_list_with_strs(stations_data, (5, 6))
         return {
             "name": metro_name_dict,
-            "serial_num": serial_num,
+            "layer_num": layer_num,
             "color": color_str,
             "sub_color": sub_color_str,
+            "name_color": name_color_str,
             "route_type": route_type,
+            "names_coord": names_coord_strs,
             "stations_data": stations_data_strs,
         }
 
@@ -127,7 +139,7 @@ class Constructor(object):
             metro = Metro(*metro_data)
             metro_objs.append(metro)
             self.all_stations_data_dict.update(metro.real_stations_data_dict)
-        metro_objs.sort(key = lambda metro: metro.serial_num)
+        metro_objs.sort(key = lambda metro: metro.layer_num)
         return metro_objs
 
     def build_stations(self):
@@ -198,7 +210,7 @@ class Constructor(object):
             name_obj_list = []
             for name_data_str in name_data_strs:
                 name_data = Constructor.get_name_data(name_data_str)
-                name_obj = SimpleNameModel(*name_data)
+                name_obj = SimpleName(*name_data)
                 name_obj_list.append(name_obj)
             name_objs_dict[name_type] = name_obj_list
         return name_objs_dict

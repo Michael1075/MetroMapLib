@@ -40,7 +40,7 @@ class FullRectangle(Rectangle):
 class SidePart(Rectangle):
     def __init__(self, id_name):
         Rectangle.__init__(self, id_name, params.FULL_SIZE)
-        mask = self.get_mask()
+        mask = SidePart.get_mask()
         self.template = mask
         self.set_style({
             "stroke-width": 0.,
@@ -48,7 +48,8 @@ class SidePart(Rectangle):
             "mask": mask,
         })
 
-    def get_mask(self):
+    @staticmethod
+    def get_mask():
         mask = Mask("metro_map_mask")
         mask.use_with_style("full_rect", {
             "fill": params.MASK_BASE_COLOR,
@@ -67,10 +68,11 @@ class Grid(Group):
             "stroke-opacity": params.GRID_STYLE["stroke_opacity"],
             "stroke-width": params.GRID_STYLE["stroke_width"],
         })
-        path = self.get_path()
+        path = Grid.get_path()
         self.append(path)
 
-    def get_path(self):
+    @staticmethod
+    def get_path():
         path = Path(None)
         for k in range(*[round(val) for val in (
             params.GRID_STYLE["step"], params.BODY_WIDTH, params.GRID_STYLE["step"]
@@ -120,6 +122,32 @@ class MapFrame(Group):
                 "fill": gradient_frame.get_gradient_obj(direction)
             })
             self.append(side_rectangle)
+
+
+class NumberNameFrame(Rectangle):
+    def __init__(self, metro_obj):
+        id_name = metro_obj.sign_id_name
+        radius = params.SIGN_NAME_STYLE["corner_radius"]
+        box_size = params.SIGN_NAME_STYLE["number_frame_side_length"] * consts.RU
+        Rectangle.__init__(self, id_name, box_size)
+        self.align_at_origin()
+        self.set_corner_radius(radius)
+        self.set_style({
+            "fill": metro_obj.main_color,
+        })
+
+
+class StringsNameFrame(Rectangle):
+    def __init__(self, metro_obj, tex_box_size):
+        id_name = metro_obj.sign_id_name
+        radius = params.SIGN_NAME_STYLE["corner_radius"]
+        box_size = tex_box_size + params.SIGN_NAME_STYLE["strings_frame_side_buff"] * consts.RU
+        Rectangle.__init__(self, id_name, box_size)
+        self.align_at_origin()
+        self.set_corner_radius(radius)
+        self.set_style({
+            "fill": metro_obj.main_color,
+        })
 
 
 class SvgPathObject(Group, Frame):
