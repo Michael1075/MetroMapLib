@@ -46,4 +46,4 @@ The file `maplib/parameters.py` keeps all parameters of the project. You can mod
 
 The file `construct_json.py` is a tool to config json files, which store path data of tex.
 
-You can also create your own map by creating 2 excel files in the format required.
+You can also create your own map by creating a folder with an `input.json` in the format required.
