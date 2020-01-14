@@ -14,7 +14,7 @@ PROJECT_CITY_NAME = "Shanghai"
 
 # dirs
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-PROGRAM_DIR = os.path.dirname(THIS_DIR)
+REPOSITORY_DIR = os.path.dirname(THIS_DIR)
 FILE_DIR = os.path.join(THIS_DIR, "files")
 PROJECT_DIR = os.path.join(FILE_DIR, PROJECT_CITY_NAME)
 TEX_CACHE_DIR = os.path.join(FILE_DIR, "tex_cache")

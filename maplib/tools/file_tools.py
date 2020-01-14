@@ -10,7 +10,7 @@ def get_file_extension(file_name):
 
 
 def get_relative_path(file_name):
-    return os.path.relpath(file_name, params.PROGRAM_DIR)
+    return os.path.relpath(file_name, params.REPOSITORY_DIR)
 
 
 def dump_dict(obj, file_name, indent=0, sort_keys=True):
