@@ -28,7 +28,7 @@ python -m pip install -r requirements.txt
 
 **Site-packages required** (Also listed in `requirements.txt`)
 
-> `numpy` (1.17.4)
+> `numpy` (1.18.0)
 
 **Systems required**
 
@@ -79,5 +79,4 @@ Copyright (c) 2019-present Michael W, released under the MIT license.
 Great thanks to those who have inspired me more or less during the production of this repository.
 
 [@3b1b](https://github.com/3b1b)  
-[@chinhoyoo](https://www.zhihu.com/people/liang-ren-you-shi-jie)  
-[@翀斌](https://weibo.com/bddb)
+[@chinhoyoo](https://www.zhihu.com/people/liang-ren-you-shi-jie)
