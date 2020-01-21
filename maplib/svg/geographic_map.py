@@ -1,5 +1,4 @@
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.svg.path_types import LPath
 from maplib.svg.path_types import OPath
@@ -70,7 +69,7 @@ class GeographicMap(Group):
         Group.__init__(self, id_name)
         self.geography_data_dict = geography_data_dict
         self.add_background_rect()
-        group_dict = GeographicMap.get_group_dict()
+        group_dict = self.get_group_dict()
         for group in group_dict.values():
             self.append(group)
         self.group_dict = group_dict
@@ -78,26 +77,25 @@ class GeographicMap(Group):
 
     def add_background_rect(self):
         self.use_with_style("body_rect", {
-            "fill": params.GEOGRAPHY_COLORS["water_area"],
-        }, -params.MAP_BODY_SHIFT_VECTOR)
+            "fill": self.params.GEOGRAPHY_COLORS["water_area"],
+        }, -self.params.MAP_BODY_SHIFT_VECTOR)
         return self
 
-    @staticmethod
-    def get_group_dict():
+    def get_group_dict(self):
         land_group = Group("land")
         land_group.set_style({
-            "fill": params.GEOGRAPHY_COLORS["land"],
+            "fill": self.params.GEOGRAPHY_COLORS["land"],
         })
         river_group = Group("river")
         river_group.set_style({
             "fill": None,
-            "stroke": params.GEOGRAPHY_COLORS["water_area"],
+            "stroke": self.params.GEOGRAPHY_COLORS["water_area"],
             "stroke-linecap": "round",
             "stroke-linejoin": "round",
         })
         lake_group = Group("lake")
         lake_group.set_style({
-            "fill": params.GEOGRAPHY_COLORS["water_area"],
+            "fill": self.params.GEOGRAPHY_COLORS["water_area"],
         })
         return {
             "land_group": land_group,

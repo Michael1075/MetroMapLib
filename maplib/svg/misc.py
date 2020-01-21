@@ -1,7 +1,6 @@
 from xml.dom import minidom
 
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
 from maplib.svg.svg_element import LinearGradient
@@ -13,17 +12,21 @@ from maplib.tools.space_ops import shrink_value
 from maplib.tools.space_ops import is_horizontal
 from maplib.tools.space_ops import get_simplified_direction
 from maplib.utils.alignable import Frame
+from maplib.utils.alignable import SvgFrame
+from maplib.utils.params_getter import Container
 
 
 class BackgroundFrame(Frame):
     def __init__(self):
-        Frame.__init__(self, params.BODY_SIZE)
+        Container.__init__(self)
+        Frame.__init__(self, self.params.BODY_SIZE)
         self.align_at_origin(consts.LD)
 
 
 class BodyRectangle(Rectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name, params.BODY_SIZE)
+        Container.__init__(self)
+        Rectangle.__init__(self, id_name, self.params.BODY_SIZE)
         self.set_style({
             "stroke-width": 0.,
         })
@@ -31,7 +34,8 @@ class BodyRectangle(Rectangle):
 
 class FullRectangle(Rectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name, params.FULL_SIZE)
+        Container.__init__(self)
+        Rectangle.__init__(self, id_name, self.params.FULL_SIZE)
         self.set_style({
             "stroke-width": 0.,
         })
@@ -39,24 +43,24 @@ class FullRectangle(Rectangle):
 
 class SidePart(Rectangle):
     def __init__(self, id_name):
-        Rectangle.__init__(self, id_name, params.FULL_SIZE)
-        mask = SidePart.get_mask()
+        Container.__init__(self)
+        Rectangle.__init__(self, id_name, self.params.FULL_SIZE)
+        mask = self.get_mask()
         self.template = mask
         self.set_style({
             "stroke-width": 0.,
-            "fill": params.MAIN_COLOR,
+            "fill": self.params.MAIN_COLOR,
             "mask": mask,
         })
 
-    @staticmethod
-    def get_mask():
+    def get_mask(self):
         mask = Mask("metro_map_mask")
         mask.use_with_style("full_rect", {
-            "fill": params.MASK_BASE_COLOR,
+            "fill": self.params.MASK_BASE_COLOR,
         })
         mask.use_with_style("body_rect", {
-            "fill": params.MASK_COLOR,
-        }, params.MAP_GROUP_SHIFT_VECTOR)
+            "fill": self.params.MASK_COLOR,
+        }, self.params.MAP_GROUP_SHIFT_VECTOR)
         return mask
 
 
@@ -64,26 +68,25 @@ class Grid(Group):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
         self.set_style({
-            "stroke": params.GRID_STYLE["color"],
-            "stroke-opacity": params.GRID_STYLE["stroke_opacity"],
-            "stroke-width": params.GRID_STYLE["stroke_width"],
+            "stroke": self.params.GRID_STYLE["color"],
+            "stroke-opacity": self.params.GRID_STYLE["stroke_opacity"],
+            "stroke-width": self.params.GRID_STYLE["stroke_width"],
         })
-        path = Grid.get_path()
+        path = self.get_path()
         self.append(path)
 
-    @staticmethod
-    def get_path():
+    def get_path(self):
         path = Path(None)
         for k in range(*[round(val) for val in (
-            params.GRID_STYLE["step"], params.BODY_WIDTH, params.GRID_STYLE["step"]
+            self.params.GRID_STYLE["step"], self.params.BODY_WIDTH, self.params.GRID_STYLE["step"]
         )]):
             path.move_to(np_float(k, 0))
-            path.line_to(np_float(k, params.BODY_HEIGHT))
+            path.line_to(np_float(k, self.params.BODY_HEIGHT))
         for k in range(*[round(val) for val in (
-            params.GRID_STYLE["step"], params.BODY_HEIGHT, params.GRID_STYLE["step"]
+            self.params.GRID_STYLE["step"], self.params.BODY_HEIGHT, self.params.GRID_STYLE["step"]
         )]):
             path.move_to(np_float(0, k))
-            path.line_to(np_float(params.BODY_WIDTH, k))
+            path.line_to(np_float(self.params.BODY_WIDTH, k))
         path.finish_path()
         return path
 
@@ -109,13 +112,13 @@ class MapFrame(Group):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
         background_frame = BackgroundFrame()
-        gradient_frame = GradientFrame(params.MAIN_COLOR)
+        gradient_frame = GradientFrame(self.params.MAIN_COLOR)
         self.template = gradient_frame
         for direction in consts.FOUR_BASE_DIRECTIONS:
             if is_horizontal(direction):
-                rect_box_size = np_float(params.GRADIENT_WIDTH, params.BODY_HEIGHT)
+                rect_box_size = np_float(self.params.GRADIENT_WIDTH, self.params.BODY_HEIGHT)
             else:
-                rect_box_size = np_float(params.BODY_WIDTH, params.GRADIENT_HEIGHT)
+                rect_box_size = np_float(self.params.BODY_WIDTH, self.params.GRADIENT_HEIGHT)
             side_rectangle = Rectangle(None, rect_box_size)
             side_rectangle.align(background_frame.get_critical_point(direction), direction)
             side_rectangle.set_style({
@@ -126,9 +129,10 @@ class MapFrame(Group):
 
 class NumberNameFrame(Rectangle):
     def __init__(self, metro_obj):
+        Container.__init__(self)
         id_name = metro_obj.sign_id_name
-        radius = params.SIGN_NAME_STYLE["corner_radius"]
-        box_size = params.SIGN_NAME_STYLE["number_frame_side_length"] * consts.RU
+        radius = self.params.SIGN_NAME_STYLE["corner_radius"]
+        box_size = self.params.SIGN_NAME_STYLE["number_frame_side_length"] * consts.RU
         Rectangle.__init__(self, id_name, box_size)
         self.align_at_origin()
         self.set_corner_radius(radius)
@@ -139,9 +143,10 @@ class NumberNameFrame(Rectangle):
 
 class StringsNameFrame(Rectangle):
     def __init__(self, metro_obj, tex_box_size):
+        Container.__init__(self)
         id_name = metro_obj.sign_id_name
-        radius = params.SIGN_NAME_STYLE["corner_radius"]
-        box_size = tex_box_size + params.SIGN_NAME_STYLE["strings_frame_side_buff"] * consts.RU
+        radius = self.params.SIGN_NAME_STYLE["corner_radius"]
+        box_size = tex_box_size + self.params.SIGN_NAME_STYLE["strings_frame_side_buff"] * consts.RU
         Rectangle.__init__(self, id_name, box_size)
         self.align_at_origin()
         self.set_corner_radius(radius)
@@ -150,32 +155,19 @@ class StringsNameFrame(Rectangle):
         })
 
 
-class SvgPathObject(Group, Frame):
-    svg_info = None
-
-    def __init__(self, id_name):
+class SvgPathTemplate(Group, Frame):
+    def __init__(self, id_name, scale_factor, svg_dir):
         Group.__init__(self, id_name)
-        doc = minidom.parse(self.svg_info["svg_dir"])
-        original_box_size = np_float(*[
-            doc.getElementsByTagName("svg")[0].getAttribute(attr_name)
-            for attr_name in ("width", "height")
-        ])
-        path_cmd = doc.getElementsByTagName("path")[0].getAttribute("d")
-        doc.unlink()
-        scale_factor = self.svg_info["scale_factor"]
+        doc = minidom.parse(svg_dir)
+        original_box_size = SvgFrame(svg_dir).box_size
+        paths = doc.getElementsByTagName("path")
         box_size = original_box_size * scale_factor
         Frame.__init__(self, box_size)
-        self.align(self.svg_info["aligned_point"])
-        shift_vector = self.get_critical_point(consts.LD)
-        self.scale_and_shift(scale_factor, shift_vector)
-        path = Path(None)
-        path.add_raw_command(path_cmd)
-        path.finish_path()
-        self.append(path)
-        self.set_style({
-            "fill": self.svg_info["color"],
-        })
-
-
-class ShanghaiMetroLogo(SvgPathObject):
-    svg_info = params.METRO_LOGO_INFO
+        self.scale_and_shift(scale_factor, -box_size / 2)
+        for path in paths:
+            path_cmd = path.getAttribute("d")
+            path_obj = Path(None)
+            path_obj.add_raw_command(path_cmd)
+            path_obj.finish_path()
+            self.append(path_obj)
+        doc.unlink()

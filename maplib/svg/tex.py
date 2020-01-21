@@ -1,11 +1,7 @@
-from functools import reduce
 from xml.dom import minidom
-import numpy as np
-import operator as op
 import os
 
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.svg.svg_element import Group
 from maplib.tools.assertions import assert_type
@@ -15,8 +11,8 @@ from maplib.tools.simple_functions import get_path_id_num_str
 from maplib.tools.simple_functions import nums_to_string
 from maplib.tools.simple_functions import remove_list_redundancies
 from maplib.tools.simple_functions import string_to_nums
-from maplib.tools.space_ops import get_positive_direction
 from maplib.utils.alignable import Alignable
+from maplib.utils.params_getter import Container
 
 
 class TexFileBaseWriter(object):
@@ -24,10 +20,10 @@ class TexFileBaseWriter(object):
     Inspired by 3b1b/manim.
     """
     def __init__(self, tex_string):
-        new_body = params.TEMPLATE_TEX_FILE_BODY.replace(params.TEX_TO_REPLACE, tex_string)
+        new_body = consts.TEMPLATE_TEX_FILE_BODY.replace(consts.TEX_TO_REPLACE, tex_string)
         self.tex_string = tex_string
         self.new_body = new_body
-        file_name_body = os.path.join(params.TEX_CACHE_DIR, str(hash(tex_string)))
+        file_name_body = os.path.join(consts.TEX_CACHE_DIR, str(hash(tex_string)))
         svg_file_name = file_name_body + ".svg"
         tex_file = self.generate_tex_file(svg_file_name)
         dvi_file = TexFileBaseWriter.tex_to_dvi(tex_file)
@@ -37,8 +33,8 @@ class TexFileBaseWriter(object):
 
     def generate_tex_file(self, svg_file_name):
         result = svg_file_name.replace(".svg", ".tex")
-        if params.PRINT_TEX_WRITING_PROGRESS_MSG:
-            print(params.TEX_WRITING_PROGRESS_MSG.format(self.tex_string))
+        if consts.PRINT_TEX_WRITING_PROGRESS_MSG:
+            print(consts.TEX_WRITING_PROGRESS_MSG.format(self.tex_string))
         with open(result, "w", encoding=consts.UTF_8) as outfile:
             outfile.write(self.new_body)
         return result
@@ -86,22 +82,20 @@ class TexFileBaseWriter(object):
         return result
 
 
-class TexFileWriter(object):
+class TexFileWriter(Container):
     def __init__(self, string, font_type, tex_dict_cache=None):
         assert_type(string, str)
-        if font_type not in params.TEX_FONT_CMDS:
+        Container.__init__(self)
+        if font_type not in consts.TEX_FONT_CMDS:
             raise ValueError(font_type)
         self.string = string
         self.font_type = font_type
-        self.tex_string = "{{\\{0} {1}}}".format(font_type, string)
+        self.tex_string = "\\{0}{{{1}}}".format(font_type, string)
         if tex_dict_cache is not None:
             self.tex_dict_cache = tex_dict_cache
 
     def __eq__(self, obj):
-        return reduce(op.and_, [
-            isinstance(obj, TexFileWriter),
-            self.tex_string == obj.tex_string,
-        ])
+        return isinstance(obj, TexFileWriter) and self.tex_string == obj.tex_string
 
     def __hash__(self):
         return hash(self.tex_string)
@@ -177,7 +171,7 @@ class TexFileWriter(object):
     def get_source_dict(self):
         if hasattr(self, "tex_dict_cache"):
             return self.tex_dict_cache
-        return params.GLOBAL_TEX_DICT.copy()
+        return self.params.GLOBAL_TEX_DICT.copy()
 
     def get_file_dict_if_existed(self):
         source_dict = self.get_source_dict()
@@ -211,6 +205,7 @@ class Tex(TexFileWriter, Alignable, Group):
     def __init__(self, string, font_type, additional_scale_factor, tex_dict_cache):
         self.additional_scale_factor = additional_scale_factor
         TexFileWriter.__init__(self, string, font_type, tex_dict_cache)
+        Alignable.__init__(self)
         Group.__init__(self, None)
         self.write_directly()
         self.parse_dict()
@@ -232,7 +227,7 @@ class Tex(TexFileWriter, Alignable, Group):
         return self
 
     def init_size_attrs(self):
-        scale_factor = params.TEX_BASE_SCALE_FACTOR * self.additional_scale_factor
+        scale_factor = self.params.TEX_BASE_SCALE_FACTOR * self.additional_scale_factor
         width = self.viewbox_list[2] * scale_factor
         height = self.viewbox_list[3] * scale_factor
         self.scale_factor = scale_factor
@@ -244,7 +239,7 @@ class Tex(TexFileWriter, Alignable, Group):
         self.align(aligned_point, aligned_direction)
         x_min, y_min = self.viewbox_list[:2]
         x_prime, y_prime = self.get_critical_point(consts.LD)
-        y_prime = params.FULL_HEIGHT - self.height - y_prime
+        y_prime = self.params.FULL_HEIGHT - self.height - y_prime
         return x_prime - x_min * self.scale_factor, y_prime - y_min * self.scale_factor
 
     def setup_group(self, aligned_point, aligned_direction):
@@ -254,37 +249,6 @@ class Tex(TexFileWriter, Alignable, Group):
         for path_id, relative_coord in self.tex_uses_list:
             self.use(path_id, relative_coord)
         return self
-        
-
-class TexBox(Alignable):
-    def __init__(self, tex_obj_list, aligned_point, aligned_direction, buff, box_format):
-        for tex_obj in tex_obj_list:
-            assert_type(tex_obj, Tex)
-        self.tex_obj_list = tex_obj_list.copy()
-        if box_format == consts.VERTICAL:
-            tex_obj_list.reverse()
-        positive_direction = get_positive_direction(box_format)
-        perpendicular_direction = consts.RU - positive_direction
-        box_size_list = [tex_obj.box_size for tex_obj in tex_obj_list]
-        box_size = reduce(op.add, [
-            np.max(box_size_list, axis=0) * perpendicular_direction,
-            np.sum(box_size_list, axis=0) * positive_direction,
-            (len(tex_obj_list) - 1) * buff * positive_direction
-        ])
-        self.set_box_size(box_size)
-        self.align(aligned_point, aligned_direction)
-        self.partial_aligned_direction = aligned_direction * perpendicular_direction - positive_direction
-        major_aligned_point = self.get_critical_point(self.partial_aligned_direction)
-        self.partial_aligned_points = [
-            reduce(op.add, [
-                major_aligned_point,
-                np.sum(box_size_list[:k], axis=0) * positive_direction,
-                k * buff * positive_direction,
-            ])
-            for k in range(len(tex_obj_list))
-        ]
-        if box_format == consts.VERTICAL:
-            self.partial_aligned_points.reverse()
 
 
 class TexGroup(Group):
@@ -296,7 +260,7 @@ class TexGroup(Group):
 
     def append_tex_box(self, tex_box):
         for group_obj, tex_obj, partial_aligned_point in zip(
-            self.group_objs, tex_box.tex_obj_list, tex_box.partial_aligned_points
+            self.group_objs, tex_box.obj_list, tex_box.partial_aligned_points
         ):
             tex_partial_group = tex_obj.setup_group(
                 partial_aligned_point, tex_box.partial_aligned_direction

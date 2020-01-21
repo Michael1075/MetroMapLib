@@ -1,5 +1,4 @@
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.svg.path_types import LPath
 from maplib.svg.path_types import OPath
@@ -20,6 +19,7 @@ from maplib.tools.space_ops import restore_angle
 from maplib.tools.space_ops import rotate
 from maplib.tools.space_ops import solve_intersection_point
 from maplib.utils.alignable import Frame
+from maplib.utils.params_getter import Container
 
 
 class RouteMask(Mask):
@@ -35,7 +35,7 @@ class NormalStationFrame(Circle):
         id_name = metro_obj.frame_id_name
         radius = metro_obj.get_normal_station_frame_radius()
         Circle.__init__(self, id_name, radius)
-        if params.STATION_FRAME_STYLE["stroke_color"]["normal"] is None:
+        if self.params.STATION_FRAME_STYLE["stroke_color"]["normal"] is None:
             color = metro_obj.main_color
             self.set_style({
                 "stroke": color,
@@ -54,22 +54,23 @@ class InterchangeStationFrame(Rectangle):
 
 class StationPoint(Circle):
     def __init__(self, metro_obj):
+        Container.__init__(self)
         id_name = metro_obj.point_id_name
         color = metro_obj.main_color
-        point_radius = params.STATION_POINT_STYLE["radius"]
+        point_radius = self.params.STATION_POINT_STYLE["radius"]
         Circle.__init__(self, id_name, point_radius)
         self.set_style({
             "fill": color,
         })
 
 
-class Metro(object):
+class Metro(Container):
     """
     About input:
     layer_num: an int;
     metro_name_dict: a tuple with different languages;
     main_color: a Color obj;
-    sub_color: either a Color obj, None or "None";
+    sub_color: either a Color obj, "-" or "*";
     name_color: a Color obj;
     route_type: a str in ("l", "o", "y");
     names_coord: a list which contains coords of names of the metro;
@@ -87,6 +88,7 @@ class Metro(object):
     """
     def __init__(self, layer_num, metro_name_dict, main_color, sub_color, name_color,
             route_type, names_coord, stations_data):
+        Container.__init__(self)
         self.layer_num = layer_num
         self.metro_name_dict = metro_name_dict
         self.main_color = main_color
@@ -101,6 +103,7 @@ class Metro(object):
         self.frame_id_name = "n" + layer_num_str
         self.point_id_name = "p" + layer_num_str
         self.sign_id_name = "s" + layer_num_str
+        self.name_dict = self.get_name_dict()
         self.init_dicts()
         self.digest_stations_data()
         if self.route_type == "y":
@@ -241,12 +244,11 @@ class Metro(object):
         return self.metro_name_dict
 
     def get_name_type(self):
-        name_dict = self.get_name_dict()
-        return "number" if len(name_dict) == 1 else "strings"
+        return "number" if len(self.name_dict) == 1 else "strings"
 
     def get_route(self):
         id_name = self.route_id_name
-        arc_radius = params.ROUTE_STYLE["arc_radius"]
+        arc_radius = self.params.ROUTE_STYLE["arc_radius"]
         if self.route_type == "l":
             return LPath(id_name, self.control_points, arc_radius)
         if self.route_type == "o":
@@ -263,7 +265,7 @@ class Metro(object):
         return self
 
     def get_normal_station_frame_radius(self):
-        return params.STATION_FRAME_STYLE["radius"]["normal"]
+        return self.params.STATION_FRAME_STYLE["radius"]["normal"]
 
     def get_normal_station_frame(self):
         return NormalStationFrame(self)
@@ -272,13 +274,14 @@ class Metro(object):
         return StationPoint(self)
 
 
-class Station(object):
+class Station(Container):
     def __init__(self, center_point, parent_metros, station_direction,
             station_name_dict, label_simple_direction):
+        Container.__init__(self)
         self.center_point = center_point
         self.parent_metros = parent_metros
         self.station_direction = station_direction
-        self.station_name_dict = station_name_dict
+        self.name_dict = station_name_dict
         station_size = len(parent_metros)
         self.station_size = station_size
         self.label_direction = num_to_base_direction(label_simple_direction)
@@ -286,9 +289,6 @@ class Station(object):
             self.init_normal_station()
         else:
             self.init_interchange_station()
-
-    def get_name_dict(self):
-        return self.station_name_dict
 
     def init_normal_station(self):
         self.is_normal = True
@@ -306,7 +306,7 @@ class Station(object):
         self.set_interchange_station_frame()
 
     def get_interchange_station_frame_radius(self):
-        return params.STATION_FRAME_STYLE["radius"]["interchange"]
+        return self.params.STATION_FRAME_STYLE["radius"]["interchange"]
 
     def get_interchange_station_frame_box_size(self):
         radius = self.get_interchange_station_frame_radius()
@@ -337,7 +337,7 @@ class Station(object):
         return self
 
 
-class SimpleName(object):
+class Name(object):
     def __init__(self, x_coord, y_coord, name_eng, name_chn):
         self.name_dict = {
             consts.ENG: name_eng,
@@ -345,15 +345,51 @@ class SimpleName(object):
         }
         self.center_point = np_float(x_coord, y_coord)
 
-    def get_name_dict(self):
-        return self.name_dict
-
 
 class MetroName(object):
     def __init__(self, metro_obj, coord):
-        self.metro_obj = metro_obj
+        self.name_dict = metro_obj.name_dict
         self.center_point = coord
         self.color = metro_obj.name_color
 
-    def get_name_dict(self):
-        return self.metro_obj.get_name_dict()
+
+class Mark(object):
+    def __init__(self, x_coord, y_coord, label_simple_direction, name_chn, logo_box_size):
+        self.name_dict = {
+            consts.CHN: name_chn,
+        }
+        self.center_point = np_float(x_coord, y_coord)
+        self.label_direction = num_to_base_direction(label_simple_direction)
+        self.logo_box_size = logo_box_size
+        self.set_frame()
+
+    def set_frame(self):
+        frame = Frame(self.logo_box_size)
+        frame.align(self.center_point)
+        self.frame = frame
+        return self
+
+
+class Title(Container):
+    def __init__(self, name_dict):
+        Container.__init__(self)
+        self.name_dict = name_dict
+        title_style = self.params.INFO_TEX_STYLE["title"]
+        self.aligned_point = title_style["aligned_point"]
+        self.aligned_direction = title_style["aligned_direction"]
+
+
+class AuthorItem(object):
+    def __init__(self, name_chn, name_eng):
+        self.name_dict = {
+            consts.ENG: name_eng,
+            consts.CHN: name_chn,
+        }
+
+
+class CopyrightInfo(Container):
+    def __init__(self, chn_string):
+        Container.__init__(self)
+        self.name_dict = {
+            "chn": chn_string,
+        }

@@ -7,7 +7,7 @@
 },
 "layer_num": 1,
 "color": "250 0 46",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -20,7 +20,7 @@
 "122 115 1 3 - Waihuanlu                      外环路",
 "128 121 1 3 - Lianhua Road                   莲花路",
 "134 127 1 3 - Jingjiang Park                 锦江乐园",
-"140 133 1 4 - Shanghai South Railway Station 上海南站",
+"140 133 1 3 - Shanghai South Railway Station 上海南站",
 "148 144 2 5 - Caobao Road                    漕宝路",
 "153 159 1 6 - Shanghai Indoor Stadium        上海体育馆",
 "159 165 1 7 - Xujiahui                       徐家汇",
@@ -31,7 +31,7 @@
 "205 188 2 5 - People's Square                人民广场",
 "202 193 3 5 - Xinzha Road                    新闸路",
 "198 200 2 1 - Hanzhong Road                  汉中路",
-"198 211 2 5 - Shanghai Railway Station       上海火车站",
+"198 211 2 3 - Shanghai Railway Station       上海火车站",
 "198 221 2 4 - North Zhongshan Road           中山北路",
 "198 227 2 4 - Yanchang Road                  延长路",
 "198 234 2 3 - Shanghai Circus World          上海马戏城",
@@ -53,7 +53,7 @@
 },
 "layer_num": 2,
 "color": "125 255 0",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -61,9 +61,9 @@
 "355  89"
 ],
 "stations_data": [
-" 92 181 0 6 - East Xujing                            徐泾东",
-" 98 181 0 2 - Hongqiao Railway Station               虹桥火车站",
-"102 181 0 7 - Hongqiao Airport Terminal 2            虹桥2号航站楼",
+" 92 181 0 2 - East Xujing                            徐泾东",
+" 98 181 0 5 - Hongqiao Railway Station               虹桥火车站",
+"102 181 0 2 - Hongqiao Airport Terminal 2            虹桥2号航站楼",
 "108 187 2 - * -                                      -",
 "116 194 0 2 - Songhong Road                          淞虹路",
 "124 194 0 2 - Beixinjing                             北新泾",
@@ -91,7 +91,7 @@
 "336 104 0 2 - Lingkong Road                          凌空路",
 "348 104 0 2 - Yuandong Avenue                        远东大道",
 "352  94 2 0 - Haitiansan Road                        海天三路",
-"352  84 2 0 - Pudong International Airport           浦东国际机场"
+"352  84 2 7 - Pudong International Airport           浦东国际机场"
 ]
 },
 {
@@ -101,7 +101,7 @@
 },
 "layer_num": 3,
 "color": "250 214 0",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -148,7 +148,7 @@
 },
 "layer_num": 4,
 "color": "35 0 245",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "o",
 "names_coord": [
@@ -192,7 +192,7 @@
 },
 "layer_num": 5,
 "color": "130 56 255",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -224,7 +224,7 @@
 },
 "layer_num": 6,
 "color": "224 0 184",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -270,7 +270,7 @@
 },
 "layer_num": 7,
 "color": "255 79 0",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -321,7 +321,7 @@
 },
 "layer_num": 8,
 "color": "3 222 245",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -368,11 +368,11 @@
 },
 "layer_num": 9,
 "color": "133 242 250",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
-" 59  86",
+" 59  89",
 "344 180"
 ],
 "stations_data": [
@@ -420,7 +420,7 @@
 },
 "layer_num": 10,
 "color": "191 168 255",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "y",
 "names_coord": [
@@ -474,7 +474,7 @@
 },
 "layer_num": 11,
 "color": "111 10 46",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "y",
 "names_coord": [
@@ -533,7 +533,7 @@
 },
 "layer_num": 12,
 "color": "0 166 65",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -582,7 +582,7 @@
 },
 "layer_num": 13,
 "color": "242 125 255",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -635,7 +635,7 @@
 },
 "layer_num": 14,
 "color": "71 89 0",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -683,7 +683,7 @@
 },
 "layer_num": 15,
 "color": "105 140 126",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -730,7 +730,7 @@
 },
 "layer_num": 16,
 "color": "143 255 179",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -761,7 +761,7 @@
 },
 "layer_num": 17,
 "color": "179 102 128",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -793,7 +793,7 @@
 },
 "layer_num": 18,
 "color": "179 125 62",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -841,7 +841,7 @@
 },
 "layer_num": 19,
 "color": "57 158 80",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -891,7 +891,7 @@
 },
 "layer_num": 20,
 "color": "52 87 169",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -924,7 +924,7 @@
 },
 "layer_num": 21,
 "color": "218 174 51",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -956,7 +956,7 @@
 },
 "layer_num": 23,
 "color": "240 133 101",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -995,7 +995,7 @@
 },
 "layer_num": 24,
 "color": "177 177 179",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -1017,7 +1017,7 @@
 },
 "layer_num": 25,
 "color": "107 193 154",
-"sub_color": null,
+"sub_color": "-",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -1044,7 +1044,7 @@
 },
 "layer_num": 26,
 "color": "186 158 55",
-"sub_color": "None",
+"sub_color": "*",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -1074,7 +1074,7 @@
 },
 "layer_num": 27,
 "color": "16 48 143",
-"sub_color": "None",
+"sub_color": "*",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -1087,7 +1087,7 @@
 "112 276 2 0 - Bao'an Highway           宝安公路",
 "112 263 2 0 - Chenxiang Road           陈翔路",
 "109 251 1 - - -                        南翔",
-" 97 238 2 0 - Nanxiang Railway Station 南翔火车站",
+" 97 238 2 4 - Nanxiang Railway Station 南翔火车站",
 "100 226 0 - - -                        金园五路",
 "102 211 2 - - -                        金运路",
 "102 194 2 4 - West Tianshan Road       天山西路",
@@ -1110,8 +1110,7 @@
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
-"273 138",
-"354  81"
+"273 138"
 ],
 "stations_data": [
 "258 142 0 - - - 龙阳路",
@@ -1130,7 +1129,7 @@
 },
 "layer_num": 0,
 "color": "121 86 93",
-"sub_color": "None",
+"sub_color": "*",
 "name_color": "255 255 255",
 "route_type": "l",
 "names_coord": [
@@ -1146,7 +1145,7 @@
 " 65  45 2 0 - Yexie          叶榭",
 " 65  29 2 0 - Tinglin        亭林",
 " 65  23 2 0 - Jinshan Yuanqu 金山园区",
-" 62  20 0 2 - Jinshanwei     金山卫"
+" 61  20 0 2 - Jinshanwei     金山卫"
 ]
 }
 ],
@@ -1302,6 +1301,21 @@
 "375 21"
 ]
 }
+]
+},
+"mark_database": {
+"railway_station": [
+" 99 178 6 上海虹桥",
+"196 210 2 上海",
+"142 130 6 上海南",
+"151 236 2 上海西",
+" 54 282 6 安亭北",
+"100 238 6 南翔北",
+" 60  85 6 松江南"
+],
+"airport": [
+"105 178 6 上海虹桥",
+"354  85 0 上海浦东"
 ]
 }
 }

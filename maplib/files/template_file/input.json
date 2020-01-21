@@ -1,0 +1,19 @@
+{
+"metro_database": [],
+"name_database": {
+"district_name": [],
+"river_name": [],
+"lake_name": []
+},
+"geography_database": {
+"Land": [],
+"Island": [],
+"River": [],
+"Lake": [],
+"InnerLake": []
+},
+"mark_database": {
+"railway_station": [],
+"airport": []
+}
+}

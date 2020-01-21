@@ -2,7 +2,6 @@ import re
 import xml.etree.ElementTree as ElementTree
 
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.tools.assertions import assert_length
 from maplib.tools.assertions import assert_type
@@ -12,14 +11,16 @@ from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import get_simplified_direction
 from maplib.utils.alignable import Alignable
 from maplib.utils.color import Color
+from maplib.utils.params_getter import Container
 
 
-class ETElement(ElementTree.Element):
+class ETElement(ElementTree.Element, Container):
     tag_name = ""
     attr_names = ()
     allow_append = True
 
     def __init__(self):
+        Container.__init__(self)
         self.init_attrib_dict()
         ElementTree.Element.__init__(self, self.tag_name, attrib=self.attrib)
 
@@ -135,11 +136,11 @@ class Svg(Element):
         self.init_attrs()
 
     def init_attrs(self):
-        self.set_attr_val("version", params.SVG_VERSION)
-        self.set_attr_val("xmlns", params.SVG_XMLNS)
-        self.set_attr_val("xmlns:xlink", params.SVG_XLINK)
-        self.set_attr_val("width", params.FULL_WIDTH)
-        self.set_attr_val("height", params.FULL_HEIGHT)
+        self.set_attr_val("version", self.params.SVG_VERSION)
+        self.set_attr_val("xmlns", self.params.SVG_XMLNS)
+        self.set_attr_val("xmlns:xlink", self.params.SVG_XLINK)
+        self.set_attr_val("width", self.params.FULL_WIDTH)
+        self.set_attr_val("height", self.params.FULL_HEIGHT)
         return self
 
 
@@ -201,7 +202,7 @@ class Group(Element):
         return self
 
     def flip_y(self, scale_val=1.):
-        matrix_tuple = (scale_val, 0., 0., -scale_val, 0., params.FULL_HEIGHT)
+        matrix_tuple = (scale_val, 0., 0., -scale_val, 0., self.params.FULL_HEIGHT)
         self.matrix(matrix_tuple)
         return self
 
@@ -251,7 +252,7 @@ class Path(Element):
 
     def add_path_command(self, command, *cmd_vals):
         assert_length(cmd_vals, Path.command_num_dict[command])
-        if command != "M" and not self.path_strings:
+        if command != "M" and (not self.path_strings or self.path_strings[-1] == "Z"):
             raise ValueError(command)
         command_str = command + nums_to_string(cmd_vals)
         self.path_strings.append(command_str)
@@ -264,11 +265,8 @@ class Path(Element):
             re.split(pattern, command_str)[1:]
         ))
         for command, attr_val_str in pairs:
-            if self.command_num_dict[command] == 0:
-                self.add_path_command(command)
-            else:
-                cmd_vals = string_to_nums(attr_val_str)
-                self.add_path_command(command, *cmd_vals)
+            cmd_vals = string_to_nums(attr_val_str)
+            self.add_path_command(command, *cmd_vals)
         return self
 
     def add_element_path(self, element):
@@ -350,6 +348,7 @@ class Circle(Alignable, Element):
     allow_append = False
 
     def __init__(self, id_name, radius):
+        Alignable.__init__(self)
         Element.__init__(self, id_name)
         self.set_box_size(2 * radius * consts.RU)
         self.set_attr_val("r", radius)
@@ -372,6 +371,7 @@ class Rectangle(Alignable, Element):
     allow_append = False
 
     def __init__(self, id_name, rect_size):
+        Alignable.__init__(self)
         Element.__init__(self, id_name)
         self.set_box_size(rect_size)
         width, height = rect_size

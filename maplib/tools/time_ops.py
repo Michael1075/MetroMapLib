@@ -1,6 +1,6 @@
 import time
 
-import maplib.parameters as params
+import maplib.constants as consts
 
 
 def timer_decorator(decorator_func=None):
@@ -19,8 +19,8 @@ def timer_decorator(decorator_func=None):
             begin = time.time()
             result = new_func(*args, **kwargs)
             end = time.time()
-            if params.PRINT_TIMER_MSG:
-                print(params.TIMER_MSG.format(func_name, end - begin))
+            if consts.PRINT_TIMER_MSG:
+                print(consts.TIMER_MSG.format(func_name, end - begin))
             return result
         return wrapper
     return decorator

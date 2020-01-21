@@ -1,4 +1,4 @@
-import maplib.parameters as params
+import maplib.constants as consts
 
 
 def remove_list_redundancies(list_obj, equal_func=None):
@@ -18,11 +18,6 @@ def remove_list_redundancies(list_obj, equal_func=None):
             used.add(equal_func(element))
     reversed_result.reverse()
     return reversed_result
-
-
-def merge_dicts(dict1, dict2):
-    dict1.update(dict2)
-    return dict1
 
 
 def sort_dict_by_key(dict_obj):
@@ -61,14 +56,14 @@ def adjacent_n_tuples(objects, n, loop):
 
 
 def close_to(val1, val2):
-    return abs(val1 - val2) < params.TOLERANCE
+    return abs(val1 - val2) < consts.TOLERANCE
 
 
 def modify_num(num):
     num = float(num)
     if close_to(round(num), num):
         return round(num)
-    return round(num, params.DECIMAL_DIGITS)
+    return round(num, consts.DECIMAL_DIGITS)
 
 
 def nums_to_string(nums, separator=" "):
@@ -84,4 +79,4 @@ def get_path_id_num_str(path_id_name):
 
 
 def get_path_id_name(path_id_num, font_type):
-    return "g{0}-{1}".format(params.TEX_FONT_CMDS.index(font_type), path_id_num)
+    return "g{0}-{1}".format(consts.TEX_FONT_CMDS.index(font_type), path_id_num)

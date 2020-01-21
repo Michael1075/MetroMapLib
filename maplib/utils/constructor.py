@@ -1,25 +1,29 @@
 import maplib.constants as consts
-import maplib.parameters as params
 
 from maplib.tools.simple_functions import get_first_item
 from maplib.tools.simple_functions import modify_num
 from maplib.tools.simple_functions import string_to_nums
 from maplib.tools.space_ops import center_of_mass
+from maplib.utils.alignable import SvgFrame
 from maplib.utils.color import Color
+from maplib.utils.models import Mark
 from maplib.utils.models import Metro
-from maplib.utils.models import SimpleName
+from maplib.utils.models import Name
 from maplib.utils.models import Station
+from maplib.utils.params_getter import Container
 
 
-class Constructor(object):
+class Constructor(Container):
     def __init__(self):
-        self.input_dict = params.INPUT_DATABASE_DICT.copy()
+        Container.__init__(self)
+        self.input_dict = self.params.INPUT_DATABASE_DICT.copy()
         self.all_stations_data_dict = {}
         self.metro_objs = self.build_metros()
         self.station_coord_tuples = list(self.all_stations_data_dict.keys())
         self.station_objs = self.build_stations()
         self.name_objs_dict = self.build_name_objs()
-        self.geography_data_dict = self.build_geography_objs()
+        self.geography_objs_dict = self.build_geography_objs()
+        self.mark_objs_dict = self.build_mark_objs()
 
     @staticmethod
     def string_to_vals(string, num_vals=None, merge_index=None, modify_indexes=None):
@@ -92,10 +96,10 @@ class Constructor(object):
         color_str = metro_dict["color"]
         main_color = Color(*string_to_nums(color_str))
         sub_color_str = metro_dict["sub_color"]
-        if sub_color_str is not None and sub_color_str != "None":
-            sub_color = Color(*string_to_nums(sub_color_str))
-        else:
+        if sub_color_str in ("-", "*"):
             sub_color = sub_color_str
+        else:
+            sub_color = Color(*string_to_nums(sub_color_str))
         name_color_str = metro_dict["name_color"]
         name_color = Color(*string_to_nums(name_color_str))
         route_type = metro_dict["route_type"]
@@ -114,10 +118,10 @@ class Constructor(object):
     def format_metro_dict(layer_num, metro_name_dict, main_color, sub_color, name_color,
             route_type, names_coord, stations_data):
         color_str = main_color.simple_str()
-        if sub_color is not None and sub_color != "None":
-            sub_color_str = sub_color.simple_str()
-        else:
+        if sub_color in ("-", "*"):
             sub_color_str = sub_color
+        else:
+            sub_color_str = sub_color.simple_str()
         name_color_str = name_color.simple_str()
         names_coord_strs = Constructor.format_list_with_strs(names_coord)
         stations_data_strs = Constructor.format_list_with_strs(stations_data, (5, 6))
@@ -141,13 +145,6 @@ class Constructor(object):
             self.all_stations_data_dict.update(metro.real_stations_data_dict)
         metro_objs.sort(key = lambda metro: metro.layer_num)
         return metro_objs
-
-    def build_stations(self):
-        station_objs = []
-        while self.station_coord_tuples:
-            station_obj = self.build_station()
-            station_objs.append(station_obj)
-        return station_objs
 
     def build_station(self):
         station_coord_tuple = self.station_coord_tuples[0]
@@ -191,6 +188,13 @@ class Constructor(object):
                         new_adjacent_coord_set.add(extended_coord_tuple)
         return new_adjacent_coord_set
 
+    def build_stations(self):
+        station_objs = []
+        while self.station_coord_tuples:
+            station_obj = self.build_station()
+            station_objs.append(station_obj)
+        return station_objs
+
     @staticmethod
     def get_name_data(name_data_str):
         x_coord, y_coord, name_eng, name_chn = Constructor.string_to_vals(name_data_str, 4, 2)
@@ -210,7 +214,7 @@ class Constructor(object):
             name_obj_list = []
             for name_data_str in name_data_strs:
                 name_data = Constructor.get_name_data(name_data_str)
-                name_obj = SimpleName(*name_data)
+                name_obj = Name(*name_data)
                 name_obj_list.append(name_obj)
             name_objs_dict[name_type] = name_obj_list
         return name_objs_dict
@@ -230,10 +234,36 @@ class Constructor(object):
         return obj_dict
 
     def build_geography_objs(self):
-        geography_data_dict = {}
+        geography_objs_dict = {}
         for obj_type, objs in self.input_dict["geography_database"].items():
-            geography_data_dict[obj_type] = []
+            geography_objs_dict[obj_type] = []
             for obj_dict in objs:
                 geography_data = Constructor.get_geography_data(obj_dict)
-                geography_data_dict[obj_type].append(geography_data)
-        return geography_data_dict
+                geography_objs_dict[obj_type].append(geography_data)
+        return geography_objs_dict
+
+    @staticmethod
+    def get_mark_data(name_data_str):
+        x_coord, y_coord, label_simple_direction, name_chn = Constructor.string_to_vals(name_data_str, 4, None, (2,))
+        return x_coord, y_coord, label_simple_direction, name_chn
+
+    @staticmethod
+    def get_mark_type_data(mark_data_strs):
+        return [Constructor.get_mark_data(mark_data_str) for mark_data_str in mark_data_strs]
+
+    @staticmethod
+    def format_mark_type_list(name_data):
+        return Constructor.format_list_with_strs(name_data, (3,))
+
+    def build_mark_objs(self):
+        mark_objs_dict = {}
+        for mark_type, mark_data_strs in self.input_dict["mark_database"].items():
+            logo_frame = SvgFrame(consts.LOGO_DIRS[mark_type])
+            logo_box_size = self.params.MARK_LOGO_STYLE[mark_type]["scale_factor"] * logo_frame.box_size
+            mark_obj_list = []
+            for mark_data_str in mark_data_strs:
+                mark_data = Constructor.get_mark_data(mark_data_str)
+                mark_obj = Mark(*mark_data, logo_box_size)
+                mark_obj_list.append(mark_obj)
+            mark_objs_dict[mark_type] = mark_obj_list
+        return mark_objs_dict

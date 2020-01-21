@@ -1,23 +1,23 @@
-from functools import reduce
 import xml.etree.ElementTree as ElementTree
 
 from maplib.svg.svg_element import Defs
 from maplib.svg.svg_element import Group
 from maplib.svg.svg_element import Svg
 from maplib.svg.path_types import CommandPath
-from maplib.tools.json_file_tools import update_generated_tex_in_json
-from maplib.tools.simple_functions import merge_dicts
+from maplib.tools.json_file_tools import JsonTools
 from maplib.tools.simple_functions import sort_dict_by_key
+from maplib.utils.params_getter import Container
 
 
-class Canvas(object):
-    def __init__(self, file_name):
+class Canvas(Container):
+    def __init__(self):
+        Container.__init__(self)
         self.init_background()
         self.init_tex_objs_list()
         self.construct()
         self.define_path()
         self.modify_json()
-        self.write_to_file(file_name)
+        self.write_to_file(self.params.OUTPUT_SVG_DIR)
 
     def construct(self):
         """
@@ -52,16 +52,17 @@ class Canvas(object):
         self.canvas.use(id_name)
 
     def define_path(self):
-        global_tex_paths_cmd_dict = sort_dict_by_key(reduce(
-            merge_dicts,
-            [tex_obj.tex_paths_cmd_dict for tex_obj in self.global_tex_objs]
-        ))
+        global_tex_paths_cmd_dict = {}
+        for tex_obj in self.global_tex_objs:
+            global_tex_paths_cmd_dict.update(tex_obj.tex_paths_cmd_dict)
+        global_tex_paths_cmd_dict = sort_dict_by_key(global_tex_paths_cmd_dict)
         for path_id, path_cmd in global_tex_paths_cmd_dict.items():
             path_obj = CommandPath(path_id, path_cmd)
             self.path_group.append(path_obj)
 
     def modify_json(self):
-        update_generated_tex_in_json(self.global_tex_objs)
+        tool = JsonTools()
+        tool.update_generated_tex_in_json(self.global_tex_objs)
 
     @staticmethod
     def modify_svg_str(string):
