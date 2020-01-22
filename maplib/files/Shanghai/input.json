@@ -622,7 +622,7 @@
 "244 128 0 2 - Beicai                          北蔡",
 "250 122 2 0 - Chenchun Road                   陈春路",
 "258 116 0 1 - Lianxi Road                     莲溪路",
-"267 116 0 1 - Middle Huaxia Road              华夏中路",
+"267 116 0 7 - Middle Huaxia Road              华夏中路",
 "278 116 0 2 - Zhongke Road                    中科路",
 "286 116 0 7 - Xuelin Road                     学林路",
 "294 116 0 2 - Zhangjiang Road                 张江路"
@@ -1134,7 +1134,7 @@
 "route_type": "l",
 "names_coord": [
 "130 114",
-" 56  20"
+" 55  20"
 ],
 "stations_data": [
 "140 131 1 - - -              上海南站",

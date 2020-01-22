@@ -41,6 +41,22 @@ class FullRectangle(Rectangle):
         })
 
 
+class BodyMaskRectangle(Group):
+    def __init__(self, id_name):
+        Group.__init__(self, id_name)
+        self.use_with_style("body_rect", {
+            "fill": self.params.MASK_BASE_COLOR,
+        })
+
+
+class MaskRectangle(Group):
+    def __init__(self, id_name):
+        Group.__init__(self, id_name)
+        self.use_with_style("full_rect", {
+            "fill": self.params.MASK_BASE_COLOR,
+        })
+
+
 class SidePart(Rectangle):
     def __init__(self, id_name):
         Container.__init__(self)
@@ -67,26 +83,26 @@ class SidePart(Rectangle):
 class Grid(Group):
     def __init__(self, id_name):
         Group.__init__(self, id_name)
-        self.set_style({
-            "stroke": self.params.GRID_STYLE["color"],
-            "stroke-opacity": self.params.GRID_STYLE["stroke_opacity"],
-            "stroke-width": self.params.GRID_STYLE["stroke_width"],
-        })
-        path = self.get_path()
-        self.append(path)
+        grid_style = self.params.GRID_STYLE
+        if grid_style["has_grid"]:
+            self.set_style({
+                "stroke": grid_style["color"],
+                "stroke-opacity": grid_style["stroke_opacity"],
+                "stroke-width": grid_style["stroke_width"],
+            })
+            path = self.get_path(grid_style["step"])
+            self.append(path)
 
-    def get_path(self):
+    def get_path(self, step):
+        body_width = self.params.BODY_WIDTH
+        body_height = self.params.BODY_HEIGHT
         path = Path(None)
-        for k in range(*[round(val) for val in (
-            self.params.GRID_STYLE["step"], self.params.BODY_WIDTH, self.params.GRID_STYLE["step"]
-        )]):
+        for k in range(*[round(val) for val in (step, body_width, step)]):
             path.move_to(np_float(k, 0))
-            path.line_to(np_float(k, self.params.BODY_HEIGHT))
-        for k in range(*[round(val) for val in (
-            self.params.GRID_STYLE["step"], self.params.BODY_HEIGHT, self.params.GRID_STYLE["step"]
-        )]):
+            path.line_to(np_float(k, body_height))
+        for k in range(*[round(val) for val in (step, body_height, step)]):
             path.move_to(np_float(0, k))
-            path.line_to(np_float(self.params.BODY_WIDTH, k))
+            path.line_to(np_float(body_width, k))
         path.finish_path()
         return path
 
@@ -156,7 +172,7 @@ class StringsNameFrame(Rectangle):
 
 
 class SvgPathTemplate(Group, Frame):
-    def __init__(self, id_name, scale_factor, svg_dir):
+    def __init__(self, id_name, svg_dir, scale_factor, color):
         Group.__init__(self, id_name)
         doc = minidom.parse(svg_dir)
         original_box_size = SvgFrame(svg_dir).box_size
@@ -164,6 +180,9 @@ class SvgPathTemplate(Group, Frame):
         box_size = original_box_size * scale_factor
         Frame.__init__(self, box_size)
         self.scale_and_shift(scale_factor, -box_size / 2)
+        self.set_style({
+            "fill": color,
+        })
         for path in paths:
             path_cmd = path.getAttribute("d")
             path_obj = Path(None)

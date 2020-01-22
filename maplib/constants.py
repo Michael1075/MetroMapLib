@@ -14,6 +14,7 @@ GITHUB_URL = "https://github.com/Michael1075/MetroMapLib"
 # numpy constants
 NAN = np.nan
 PI = np.pi
+DEGREE = PI / 180
 
 # directions
 ORIGIN = np_float(0, 0)
@@ -28,7 +29,7 @@ RD = RIGHT + DOWN
 FOUR_BASE_DIRECTIONS = (RIGHT, UP, LEFT, DOWN)
 EIGHT_BASE_DIRECTIONS = (RIGHT, RU, UP, LU, LEFT, LD, DOWN, RD)
 
-# strs
+# string constants
 UTF_8 = "utf-8"
 HORIZONTAL = "h"
 VERTICAL = "v"
@@ -52,6 +53,7 @@ TEX_CACHE_DIR = os.path.join(FILE_DIR, "tex_cache")
 LOGO_DIRS = {
     "railway_station": os.path.join(FILE_DIR, "railway_station.svg"),
     "airport": os.path.join(FILE_DIR, "airport.svg"),
+    "compass": os.path.join(FILE_DIR, "compass.svg"),
 }
 
 # tex base

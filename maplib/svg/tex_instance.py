@@ -14,15 +14,21 @@ from maplib.tools.json_file_tools import JsonTools
 from maplib.tools.numpy_type_tools import np_float
 from maplib.tools.simple_functions import remove_list_redundancies
 from maplib.tools.space_ops import get_simplified_direction
+from maplib.tools.space_ops import get_positive_direction
+from maplib.utils.alignable import Alignable
 from maplib.utils.alignable import Box
+from maplib.utils.constructor import Constructor
 from maplib.utils.models import AuthorItem
+from maplib.utils.models import CompassTex
 from maplib.utils.models import CopyrightInfo
+from maplib.utils.models import LegendItem
 from maplib.utils.models import MetroName
+from maplib.utils.models import SimpleMetro
 from maplib.utils.models import Title
 from maplib.utils.params_getter import Container
 
 
-class TexNameTemplate(Group):
+class TexTemplate(Group):
     same_color = True
 
     def __init__(self, id_name, objs, tex_style):
@@ -128,8 +134,8 @@ class TexNameTemplate(Group):
                 string_and_cmd_list.append((string, font_type))
         filtered_string_and_cmd_list = remove_list_redundancies(string_and_cmd_list)
         with ft.ThreadPoolExecutor() as executor:
-            tex_cache = list(executor.map(TexNameTemplate.construct_tex, filtered_string_and_cmd_list))
-        tex_dict_cache = TexNameTemplate.get_dict_from_tex_cache(tex_cache)
+            tex_cache = list(executor.map(TexTemplate.construct_tex, filtered_string_and_cmd_list))
+        tex_dict_cache = TexTemplate.get_dict_from_tex_cache(tex_cache)
         return tex_dict_cache
 
     def add_body_tex(self):
@@ -163,14 +169,14 @@ class TexNameTemplate(Group):
         return self
 
 
-class CenterAlignedTexNameTemplate(TexNameTemplate):
+class CenterAlignedTexTemplate(TexTemplate):
     def get_aligning_information(self, obj):
         aligned_point = obj.center_point
         aligned_direction = consts.ORIGIN
         return aligned_point, aligned_direction
 
 
-class AlignedTexNameTemplate(TexNameTemplate):
+class AlignedTexTemplate(TexTemplate):
     def get_aligning_information(self, obj):
         align_buffs = [self.tex_style[key] for key in ("big_buff", "small_buff")]
         label_direction = obj.label_direction
@@ -180,7 +186,7 @@ class AlignedTexNameTemplate(TexNameTemplate):
         return aligned_point, aligned_direction
 
 
-class ListTexNameTemplate(TexNameTemplate):
+class ListTexTemplate(TexTemplate):
     def add_body_tex(self):
         tex_group = self.get_tex_group()
         tex_dict_cache = self.get_tex_dict_cache()
@@ -206,13 +212,13 @@ class ListTexNameTemplate(TexNameTemplate):
         return self
 
 
-class StationName(AlignedTexNameTemplate):
+class StationName(AlignedTexTemplate):
     def __init__(self, id_name, station_objs):
         Container.__init__(self)
-        AlignedTexNameTemplate.__init__(self, id_name, station_objs, self.params.STATION_NAME_TEX_STYLE)
+        AlignedTexTemplate.__init__(self, id_name, station_objs, self.params.STATION_NAME_TEX_STYLE)
 
 
-class SingleGeographicName(CenterAlignedTexNameTemplate):
+class SingleGeographicName(CenterAlignedTexTemplate):
     pass
 
 
@@ -226,7 +232,7 @@ class GeographicName(Group):
             self.append(name_group)
 
 
-class SingleSignName(CenterAlignedTexNameTemplate):
+class SingleSignName(CenterAlignedTexTemplate):
     same_color = False
 
     def __init__(self, id_name, metro_list, tex_style):
@@ -236,8 +242,7 @@ class SingleSignName(CenterAlignedTexNameTemplate):
         for metro_name_list in metro_name_list_dict.values():
             metro_name_objs.extend(metro_name_list)
         self.metro_name_list_dict = metro_name_list_dict
-        self.init_template()
-        CenterAlignedTexNameTemplate.__init__(self, id_name, metro_name_objs, tex_style)
+        CenterAlignedTexTemplate.__init__(self, id_name, metro_name_objs, tex_style)
 
     def get_special_color(self, language, metro_name_obj):
         return metro_name_obj.color
@@ -313,7 +318,7 @@ class SignName(Group):
         return frame_group
 
 
-class SingleMarkGroup(AlignedTexNameTemplate):
+class SingleMarkGroup(AlignedTexTemplate):
     pass
 
 
@@ -324,45 +329,216 @@ class MarkGroup(Group):
         for mark_type, obj_list in mark_objs_dict.items():
             logo_style = self.params.MARK_LOGO_STYLE[mark_type]
             logo_template = SvgPathTemplate(
-                mark_type, logo_style["scale_factor"], consts.LOGO_DIRS[mark_type]
+                mark_type, consts.LOGO_DIRS[mark_type], logo_style["scale_factor"], logo_style["color"]
             )
             self.template.append(logo_template)
             for obj in obj_list:
-                self.use_with_style(mark_type, {
-                    "fill": logo_style["color"],
-                }, obj.center_point)
+                self.use(mark_type, obj.center_point)
             mark_group = SingleMarkGroup(
                 mark_type + "_group", obj_list, self.params.MARK_TEX_STYLE[mark_type]
             )
             self.append(mark_group)
 
 
-class TitleGroup(TexNameTemplate):
+class Compass(Group):
+    def __init__(self, id_name):
+        Group.__init__(self, id_name)
+        compass_style = self.params.COMPASS_STYLE
+        compass_svg = SvgPathTemplate(
+            "compass", consts.LOGO_DIRS["compass"], compass_style["scale_factor"], compass_style["color"]
+        )
+        label_tex_obj = CompassTex()
+        label_tex_group = CenterAlignedTexTemplate(None, [label_tex_obj], self.params.COMPASS_TEX_STYLE)
+        deflection_angle = -compass_style["deflection_angle"]
+        self.rotate_and_shift(deflection_angle, compass_style["aligned_point"])
+        self.append(compass_svg)
+        self.append(label_tex_group)
+
+
+class TitleGroup(TexTemplate):
     def __init__(self, id_name):
         Container.__init__(self)
         title_obj = Title(self.params.INFO_STRINGS["title"])
-        TexNameTemplate.__init__(self, id_name, [title_obj], self.params.INFO_TEX_STYLE["title"])
+        TexTemplate.__init__(self, id_name, [title_obj], self.params.INFO_TEX_STYLE["title"])
 
 
-class AuthorCatalogueGroup(ListTexNameTemplate):
+class LegendGroup(Group, Alignable):
+    def __init__(self, id_name):
+        Group.__init__(self, id_name)
+        mark_frames, tex_frames = self.get_table_frames(1, 4, self.params.LEGEND_STYLE)
+        self.append_marks(mark_frames)
+        self.append_discriptional_tex(tex_frames)
+
+    def append_marks(self, mark_frames):
+        station_frame_style = self.params.STATION_FRAME_STYLE
+        station_frame_style_dict = {
+            "fill": station_frame_style["fill_color"],
+            "fill-opacity": station_frame_style["fill_opacity"],
+            "stroke-opacity": station_frame_style["stroke_opacity"],
+        }
+        normal_station_frame_style_dict = station_frame_style_dict.copy()
+        normal_station_frame_style_dict.update({
+            "stroke-width": station_frame_style["stroke_width"]["normal"],
+        })
+        transfer_station_frame_style_dict = station_frame_style_dict.copy()
+        transfer_station_frame_style_dict.update({
+            "stroke": station_frame_style["stroke_color"]["transfer"],
+            "stroke-width": station_frame_style["stroke_width"]["transfer"],
+        })
+        normal_station_mark = self.get_normal_station_mark(
+            normal_station_frame_style_dict,
+            mark_frames[0][0].get_critical_point(consts.ORIGIN)
+        )
+        transfer_station_mark = self.get_transfer_station_mark(
+            transfer_station_frame_style_dict,
+            mark_frames[0][1].get_critical_point(consts.ORIGIN)
+        )
+        self.append(normal_station_mark)
+        self.append(transfer_station_mark)
+        self.use("airport", mark_frames[0][2].get_critical_point(consts.ORIGIN))
+        self.use("railway_station", mark_frames[0][3].get_critical_point(consts.ORIGIN))
+        return self
+
+    def get_normal_station_mark(self, frame_style_dict, relative_coord):
+        example_stations_info = self.params.LEGEND_STYLE["example_stations"]
+        normal_station_mark = Group(None)
+        normal_station_mark.use_with_style(
+            "n" + str(example_stations_info["normal"]),
+            frame_style_dict,
+            relative_coord,
+        )
+        return normal_station_mark
+
+    def get_transfer_station_mark(self, frame_style_dict, relative_coord):
+        example_stations_info = self.params.LEGEND_STYLE["example_stations"]
+        transfer_station_mark = Group(None)
+        transfer_station_mark.shift(relative_coord)
+        transfer_station_direction = example_stations_info["transfer_station_direction"]
+        positive_direction = get_positive_direction(transfer_station_direction)
+        transfer_station_size = len(example_stations_info["transfer"])
+        transfer_station_mark.use_with_style(
+            transfer_station_direction + str(transfer_station_size),
+            frame_style_dict
+        )
+        for k, num in enumerate(example_stations_info["transfer"]):
+            transfer_station_mark.use(
+                "p" + str(num), (k + (1 - transfer_station_size) / 2) * positive_direction
+            )
+        return transfer_station_mark
+
+    def append_discriptional_tex(self, tex_frames):
+        legend_names = self.params.INFO_STRINGS["legend"]
+        legend_items = [
+            LegendItem(legend_names[k], tex_frames[0][k].get_critical_point(consts.ORIGIN))
+            for k in range(4)
+        ]
+        discriptional_tex_group = CenterAlignedTexTemplate(
+            None, legend_items, self.params.INFO_TEX_STYLE["legend"]
+        )
+        self.append(discriptional_tex_group)
+
+
+class LinesGroup(Group, Alignable):
+    def __init__(self, id_name):
+        Group.__init__(self, id_name)
+        self.init_template()
+        metro_data_list = self.params.INPUT_DATABASE_DICT["metro_database"]
+        simple_metro_list = []
+        for metro_dict in metro_data_list:
+            layer_num, metro_name_dict, main_color, sub_color, route_type, name_color, \
+                names_coord, stations_data = Constructor.get_metro_data(metro_dict)
+            simple_metro = SimpleMetro(layer_num, metro_name_dict, main_color, sub_color)
+            simple_metro_list.append(simple_metro)
+        num_rows = self.params.LINES_STYLE["lines_per_column"]
+        num_columns = len(simple_metro_list) // num_rows + 1
+        mark_frames, tex_frames = self.get_table_frames(num_columns, num_rows, self.params.LINES_STYLE)
+        self.simple_metro_list = simple_metro_list
+        self.lines_per_column = num_rows
+        self.append_metro_marks(mark_frames)
+        self.append_metro_name_tex(tex_frames)
+
+    def append_metro_marks(self, mark_frames):
+        metro_mark_group = Group(None)
+        metro_mark_group.set_style({
+            "fill": None,
+            "stroke-opacity": self.params.ROUTE_STYLE["stroke_opacity"],
+            "stroke-linecap": "round",
+        })
+        line_group = Group(None)
+        main_line_group = Group(None)
+        main_line_group.set_style({
+            "stroke-width": self.params.ROUTE_STYLE["stroke_width"],
+        })
+        sub_line_group = Group(None)
+        sub_line_group.set_style({
+            "stroke-width": self.params.ROUTE_STYLE["minor_stroke_width"],
+        })
+        line_mask_group = Group(None)
+        line_mask_group.set_style({
+            "fill": None,
+            "stroke-width": self.params.ROUTE_STYLE["minor_stroke_width"],
+            "stroke": self.params.MASK_COLOR,
+            "stroke-linecap": "round",
+        })
+        lpc = self.lines_per_column
+        line_length = self.params.LINES_STYLE["length"]
+        for k, simple_metro in enumerate(self.simple_metro_list):
+            aligned_point = mark_frames[k // lpc][k % lpc].get_critical_point(consts.ORIGIN)
+            line = simple_metro.get_line(aligned_point, line_length)
+            line_group.append(line)
+            if simple_metro.sub_color == "-":
+                main_line_group.use_with_style(simple_metro.line_id_name, {
+                    "stroke": simple_metro.main_color,
+                })
+            else:
+                line_mask = simple_metro.get_mask()
+                line_mask_group.append(line_mask)
+                main_line_group.use_with_style(simple_metro.line_id_name, {
+                    "stroke": simple_metro.main_color,
+                    "mask": line_mask,
+                })
+                if simple_metro.sub_color != "*":
+                    sub_line_group.use_with_style(simple_metro.line_id_name, {
+                        "stroke": simple_metro.sub_color,
+                    })
+        metro_mark_group.append(main_line_group)
+        metro_mark_group.append(sub_line_group)
+        self.template.append(line_group)
+        self.template.append(line_mask_group)
+        self.append(metro_mark_group)
+        return self
+
+    def append_metro_name_tex(self, tex_frames):
+        lpc = self.lines_per_column
+        for k, simple_metro in enumerate(self.simple_metro_list):
+            aligned_point = tex_frames[k // lpc][k % lpc].get_critical_point(consts.ORIGIN)
+            simple_metro.center_point = aligned_point
+        metro_name_tex_group = CenterAlignedTexTemplate(
+            None, self.simple_metro_list, self.params.INFO_TEX_STYLE["lines"]
+        )
+        self.append(metro_name_tex_group)
+        return self
+
+
+class AuthorCatalogueGroup(ListTexTemplate):
     def __init__(self, id_name):
         Container.__init__(self)
         key_names = self.params.INFO_STRINGS["author"]
         author_items = [
             AuthorItem(key_names["project_author"], self.params.PROJECT_AUTHOR),
             AuthorItem(key_names["code_author"], consts.CODE_AUTHOR),
-            AuthorItem(key_names["github_url"], consts.GITHUB_URL),
+            AuthorItem(key_names["github_url"], consts.GITHUB_URL)
         ]
-        ListTexNameTemplate.__init__(self, id_name, author_items, self.params.INFO_TEX_STYLE["author"])
+        ListTexTemplate.__init__(self, id_name, author_items, self.params.INFO_TEX_STYLE["author"])
 
 
-class CopyrightGroup(ListTexNameTemplate):
+class CopyrightGroup(ListTexTemplate):
     def __init__(self, id_name):
         Container.__init__(self)
         copyright_objs = [
             CopyrightInfo(info) for info in self.params.INFO_STRINGS["copyright"]
         ]
-        ListTexNameTemplate.__init__(
+        ListTexTemplate.__init__(
             self, id_name, copyright_objs, self.params.INFO_TEX_STYLE["copyright"]
         )
 
@@ -395,11 +571,9 @@ class MapInfo(Group):
     def get_metro_logo(self):
         metro_logo_group = Group(None)
         metro_logo_style = self.params.METRO_LOGO_STYLE
-        metro_logo = SvgPathTemplate(None, metro_logo_style["scale_factor"], self.params.METRO_LOGO_DIR)
-        
-        metro_logo.set_style({
-            "fill": metro_logo_style["color"],
-        })
+        metro_logo = SvgPathTemplate(
+            None, self.params.METRO_LOGO_DIR, metro_logo_style["scale_factor"], metro_logo_style["color"]
+        )
         metro_logo_group.append(metro_logo)
         metro_logo_group.shift(metro_logo_style["aligned_point"])
         return metro_logo_group
@@ -407,6 +581,8 @@ class MapInfo(Group):
     def get_tex_components(self):
         return (
             TitleGroup("title"),
-            AuthorCatalogueGroup("author"),
+            LegendGroup("legend"),
+            LinesGroup("lines"),
+            AuthorCatalogueGroup("author_catalogue"),
             CopyrightGroup("copyright"),
         )

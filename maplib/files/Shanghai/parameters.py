@@ -32,11 +32,30 @@ MASK_COLOR = consts.BLACK
 TEX_BASE_SCALE_FACTOR = 0.07
 
 # strings
+COMPASS_LABLE_TEX = "N"
 INFO_STRINGS = {
     "title": {
         consts.CHN: "上海轨道交通网络示意图",
         consts.ENG: "SHANGHAI METRO NETWORK MAP",
     },
+    "legend": [
+        {
+            consts.CHN: "地铁站",
+            consts.ENG: "Metro Station",
+        },
+        {
+            consts.CHN: "换乘站",
+            consts.ENG: "Transfer Station",
+        },
+        {
+            consts.CHN: "机场",
+            consts.ENG: "Airport",
+        },
+        {
+            consts.CHN: "火车站",
+            consts.ENG: "Railway Station",
+        },
+    ],
     "author": {
         "project_author": "设计",
         "code_author": "代码",
@@ -44,7 +63,7 @@ INFO_STRINGS = {
     },
     "copyright": [
         "本图经过变形设计处理，部分规划建设，内容仅供参考。",
-        "禁止未经授权的商业用途。",
+        "版权所有，禁止用于未经授权的商业用途。",
     ],
 }
 
@@ -69,15 +88,15 @@ STATION_POINT_STYLE = {
 STATION_FRAME_STYLE = {
     "radius": {
         "normal": 0.4,
-        "interchange": 0.55,
+        "transfer": 0.55,
     },
     "stroke_width": {
         "normal": 0.2,
-        "interchange": 0.1,
+        "transfer": 0.1,
     },
     "stroke_color": {
         "normal": None,
-        "interchange": consts.BLACK,
+        "transfer": consts.BLACK,
     },
     "stroke_opacity": 0.9,
     "fill_color": consts.WHITE,
@@ -99,7 +118,14 @@ MARK_LOGO_STYLE = {
         "color": Color(126, 101, 159),
     },
 }
+COMPASS_STYLE = {
+    "deflection_angle": 27.0 * consts.DEGREE,
+    "scale_factor": 18.0,
+    "color": Color(100, 100, 100),
+    "aligned_point": np_float(10.0, 290.0),
+}
 GRID_STYLE = {
+    "has_grid": False,
     "step": 50.0,
     "stroke_width": 0.3,
     "stroke_opacity": 0.15,
@@ -115,6 +141,29 @@ METRO_LOGO_STYLE = {
     "scale_factor": 15.0,
     "color": Color(215, 5, 8),
     "aligned_point": np_float(20.0, 20.0),
+}
+LEGEND_STYLE = {
+    "mark_box_width": 6.0,
+    "tex_box_width": 10.0,
+    "box_height": 6.0,
+    "buff": 0.0,
+    "aligned_point": np_float(136.0, 31.0),
+    "aligned_direction": consts.LU,
+    "example_stations": {
+        "normal": 1,
+        "transfer": [10, 2],
+        "transfer_station_direction": consts.HORIZONTAL,
+    }
+}
+LINES_STYLE = {
+    "lines_per_column": 5,
+    "length": 4.0,
+    "mark_box_width": 3.0,
+    "tex_box_width": 11.0,
+    "box_height": 6.0,
+    "buff": 4.0,
+    "aligned_point": np_float(165.0, 31.0),
+    "aligned_direction": consts.LU,
 }
 
 # tex styles
@@ -268,6 +317,18 @@ MARK_TEX_STYLE = {
         },
     },
 }
+COMPASS_TEX_STYLE = {
+    "tex_box_format": consts.VERTICAL,
+    "tex_buff": 0.0,
+    "languages": {
+        consts.ENG: {
+            "tex_box_index": 0,
+            "scale_factor": 4.0,
+            "font_type": "sffamily",
+            "color": consts.WHITE,
+        },
+    },
+}
 INFO_TEX_STYLE = {
     "title": {
         "tex_box_format": consts.VERTICAL,
@@ -289,12 +350,48 @@ INFO_TEX_STYLE = {
             },
         },
     },
+    "legend": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": -0.2,
+        "languages": {
+            consts.CHN: {
+                "tex_box_index": 0,
+                "scale_factor": 2.4,
+                "font_type": "lishu",
+                "color": consts.BLACK,
+            },
+            consts.ENG: {
+                "tex_box_index": 1,
+                "scale_factor": 1.8,
+                "font_type": "sffamily",
+                "color": Color(140, 140, 140),
+            },
+        },
+    },
+    "lines": {
+        "tex_box_format": consts.VERTICAL,
+        "tex_buff": -0.2,
+        "languages": {
+            consts.CHN: {
+                "tex_box_index": 0,
+                "scale_factor": 2.4,
+                "font_type": "heiti",
+                "color": consts.BLACK,
+            },
+            consts.ENG: {
+                "tex_box_index": 1,
+                "scale_factor": 1.8,
+                "font_type": "sffamily",
+                "color": Color(140, 140, 140),
+            },
+        },
+    },
     "author": {
         "tex_box_format": consts.HORIZONTAL,
         "tex_buff": 3.0,
         "item_buff": 15.0,
-        "aligned_point": np_float(450.0, 25.0),
-        "aligned_direction": consts.RIGHT,
+        "aligned_point": np_float(285.0, 25.0),
+        "aligned_direction": consts.LEFT,
         "languages": {
             consts.CHN: {
                 "tex_box_index": 0,
@@ -313,9 +410,9 @@ INFO_TEX_STYLE = {
     "copyright": {
         "tex_box_format": consts.HORIZONTAL,
         "tex_buff": 0.0,
-        "item_buff": 15.0,
-        "aligned_point": np_float(450.0, 16.0),
-        "aligned_direction": consts.RIGHT,
+        "item_buff": 5.0,
+        "aligned_point": np_float(285.0, 16.0),
+        "aligned_direction": consts.LEFT,
         "languages": {
             consts.CHN: {
                 "tex_box_index": 0,

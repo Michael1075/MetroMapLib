@@ -33,11 +33,55 @@ class Alignable(Container):
     def get_critical_point(self, direction):
         return self.center_point + self.get_critical_vector(direction)
 
+    def get_table_frames(self, num_columns, num_rows, box_style):
+        column_width = box_style["mark_box_width"] + box_style["tex_box_width"]
+        row_height = box_style["box_height"]
+        box_width = column_width * num_columns + box_style["buff"] * (num_columns - 1)
+        box_height = row_height * num_rows
+        box_size = np_float(box_width, box_height)
+        self.set_box_size(box_size)
+        self.align(box_style["aligned_point"], box_style["aligned_direction"])
+        major_aligned_point = self.get_critical_point(consts.LU)
+        mark_frame_template = Frame(np_float(
+            box_style["mark_box_width"],
+            box_style["box_height"]
+        ))
+        tex_frame_template = Frame(np_float(
+            box_style["tex_box_width"],
+            box_style["box_height"]
+        ))
+        mark_frames = []
+        tex_frames = []
+        for column_index in range(num_columns):
+            column_mark_frames = []
+            column_tex_frames = []
+            for row_index in range(num_rows):
+                mark_aligned_point = major_aligned_point + np_float(
+                    (column_width + box_style["buff"]) * column_index,
+                    -row_height * row_index
+                )
+                mark_frame = mark_frame_template.copy()
+                mark_frame.align(mark_aligned_point, consts.LU)
+                column_mark_frames.append(mark_frame)
+                tex_aligned_point = sum([
+                    mark_aligned_point,
+                    box_style["mark_box_width"] * consts.RIGHT
+                ])
+                tex_frame = tex_frame_template.copy()
+                tex_frame.align(tex_aligned_point, consts.LU)
+                column_tex_frames.append(tex_frame)
+            mark_frames.append(column_mark_frames)
+            tex_frames.append(column_tex_frames)
+        return mark_frames, tex_frames
+
 
 class Frame(Alignable):
     def __init__(self, box_size):
         Alignable.__init__(self)
         self.set_box_size(box_size)
+
+    def copy(self):
+        return Frame(self.box_size)
 
 
 class SvgFrame(Frame):

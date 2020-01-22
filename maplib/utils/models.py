@@ -4,6 +4,7 @@ from maplib.svg.path_types import LPath
 from maplib.svg.path_types import OPath
 from maplib.svg.path_types import YPath
 from maplib.svg.svg_element import Circle
+from maplib.svg.svg_element import Line
 from maplib.svg.svg_element import Mask
 from maplib.svg.svg_element import Rectangle
 from maplib.tools.assertions import assert_is_standard_route
@@ -22,14 +23,6 @@ from maplib.utils.alignable import Frame
 from maplib.utils.params_getter import Container
 
 
-class RouteMask(Mask):
-    def __init__(self, metro_obj):
-        id_name = metro_obj.mask_id_name
-        Mask.__init__(self, id_name)
-        self.use("mask_rect")
-        self.use(metro_obj.route_id_name)
-
-
 class NormalStationFrame(Circle):
     def __init__(self, metro_obj):
         id_name = metro_obj.frame_id_name
@@ -42,11 +35,11 @@ class NormalStationFrame(Circle):
             })
 
 
-class InterchangeStationFrame(Rectangle):
+class TransferStationFrame(Rectangle):
     def __init__(self, station_obj):
         id_name = station_obj.frame_id_name
-        radius = station_obj.get_interchange_station_frame_radius()
-        box_size = station_obj.get_interchange_station_frame_box_size()
+        radius = station_obj.get_transfer_station_frame_radius()
+        box_size = station_obj.get_transfer_station_frame_box_size()
         Rectangle.__init__(self, id_name, box_size)
         self.align_at_origin()
         self.set_corner_radius(radius)
@@ -258,11 +251,11 @@ class Metro(Container):
         raise NotImplementedError(self.route_type)
 
     def get_mask(self):
-        return RouteMask(self)
-
-    def set_mask(self, mask_template):
-        self.mask = mask_template
-        return self
+        id_name = self.mask_id_name
+        mask = Mask(id_name)
+        mask.use("body_mask_rect")
+        mask.use(self.route_id_name)
+        return mask
 
     def get_normal_station_frame_radius(self):
         return self.params.STATION_FRAME_STYLE["radius"]["normal"]
@@ -288,7 +281,7 @@ class Station(Container):
         if station_size == 1:
             self.init_normal_station()
         else:
-            self.init_interchange_station()
+            self.init_transfer_station()
 
     def init_normal_station(self):
         self.is_normal = True
@@ -296,28 +289,28 @@ class Station(Container):
         self.set_normal_station_frame()
         return self
 
-    def init_interchange_station(self):
+    def init_transfer_station(self):
         self.is_normal = False
         self.frame_id_name = self.station_direction + str(self.station_size)
         self.station_type = (self.station_size, self.station_direction)
         positive_direction = get_positive_direction(self.station_direction)
         positioned_point = self.center_point - (self.station_size - 1) * positive_direction / 2
         self.point_coords = [(positioned_point + k * positive_direction) for k in range(self.station_size)]
-        self.set_interchange_station_frame()
+        self.set_transfer_station_frame()
 
-    def get_interchange_station_frame_radius(self):
-        return self.params.STATION_FRAME_STYLE["radius"]["interchange"]
+    def get_transfer_station_frame_radius(self):
+        return self.params.STATION_FRAME_STYLE["radius"]["transfer"]
 
-    def get_interchange_station_frame_box_size(self):
-        radius = self.get_interchange_station_frame_radius()
+    def get_transfer_station_frame_box_size(self):
+        radius = self.get_transfer_station_frame_radius()
         x = self.station_size - 1 + 2 * radius
         y = 2 * radius
         if self.station_direction == consts.VERTICAL:
             x, y = y, x
         return np_float(x, y)
 
-    def get_interchange_station_frame(self):
-        return InterchangeStationFrame(self)
+    def get_transfer_station_frame(self):
+        return TransferStationFrame(self)
 
     def set_frame(self, box_size):
         frame = Frame(box_size)
@@ -331,8 +324,8 @@ class Station(Container):
         self.set_frame(box_size)
         return self
 
-    def set_interchange_station_frame(self):
-        box_size = self.get_interchange_station_frame_box_size()
+    def set_transfer_station_frame(self):
+        box_size = self.get_transfer_station_frame_box_size()
         self.set_frame(box_size)
         return self
 
@@ -347,9 +340,9 @@ class Name(object):
 
 
 class MetroName(object):
-    def __init__(self, metro_obj, coord):
+    def __init__(self, metro_obj, center_point):
         self.name_dict = metro_obj.name_dict
-        self.center_point = coord
+        self.center_point = center_point
         self.color = metro_obj.name_color
 
 
@@ -370,6 +363,15 @@ class Mark(object):
         return self
 
 
+class CompassTex(Container):
+    def __init__(self):
+        Container.__init__(self)
+        self.name_dict = {
+            consts.ENG: self.params.COMPASS_LABLE_TEX,
+        }
+        self.center_point = consts.ORIGIN
+
+
 class Title(Container):
     def __init__(self, name_dict):
         Container.__init__(self)
@@ -377,6 +379,34 @@ class Title(Container):
         title_style = self.params.INFO_TEX_STYLE["title"]
         self.aligned_point = title_style["aligned_point"]
         self.aligned_direction = title_style["aligned_direction"]
+
+
+class LegendItem(object):
+    def __init__(self, name_dict, center_point):
+        self.name_dict = name_dict
+        self.center_point = center_point
+
+
+class SimpleMetro(object):
+    def __init__(self, layer_num, metro_name_dict, main_color, sub_color):
+        self.layer_num = layer_num
+        self.name_dict = metro_name_dict
+        self.main_color = main_color
+        self.sub_color = sub_color
+        self.line_id_name = "l" + str(layer_num)
+        self.mask_id_name = "lm" + str(layer_num)
+
+    def get_line(self, aligned_point, line_length):
+        begin_point = aligned_point + line_length * consts.DOWN / 2
+        end_point = begin_point + line_length * consts.UP
+        line = Line(self.line_id_name, begin_point, end_point)
+        return line
+
+    def get_mask(self):
+        line_mask = Mask(self.mask_id_name)
+        line_mask.use("mask_rect")
+        line_mask.use(self.line_id_name)
+        return line_mask
 
 
 class AuthorItem(object):
@@ -387,9 +417,8 @@ class AuthorItem(object):
         }
 
 
-class CopyrightInfo(Container):
+class CopyrightInfo(object):
     def __init__(self, chn_string):
-        Container.__init__(self)
         self.name_dict = {
             "chn": chn_string,
         }

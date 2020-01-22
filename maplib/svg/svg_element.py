@@ -8,6 +8,7 @@ from maplib.tools.assertions import assert_type
 from maplib.tools.simple_functions import modify_num
 from maplib.tools.simple_functions import nums_to_string
 from maplib.tools.simple_functions import string_to_nums
+from maplib.tools.space_ops import get_2D_rotation_matrix
 from maplib.tools.space_ops import get_simplified_direction
 from maplib.utils.alignable import Alignable
 from maplib.utils.color import Color
@@ -167,7 +168,7 @@ class Group(Element):
         return self
 
     def set_transform(self, prefix, transform_tuple):
-        if prefix not in ("matrix", "translate", "scale"):
+        if prefix not in ("matrix", "translate"):
             raise NotImplementedError(prefix)
         for val in transform_tuple:
             assert_type(val, float)
@@ -191,13 +192,15 @@ class Group(Element):
         self.set_transform("translate", shift_vector)
         return self
 
-    def scale(self, scale_val):
-        self.set_transform("scale", (scale_val,))
-        return self
-
     def scale_and_shift(self, scale_val, shift_vector):
         assert_length(shift_vector, 2)
         matrix_tuple = (scale_val, 0., 0., scale_val, *shift_vector)
+        self.matrix(matrix_tuple)
+        return self
+
+    def rotate_and_shift(self, angle, shift_vector):
+        mat = get_2D_rotation_matrix(angle)
+        matrix_tuple = (mat[0][0], mat[1][0], mat[0][1], mat[1][1], *shift_vector)
         self.matrix(matrix_tuple)
         return self
 
@@ -210,6 +213,10 @@ class Group(Element):
 class Mask(Element):
     tag_name = "mask"
     attr_names = ("id", "maskUnits", "style")
+
+    def init_attrs(self):
+        self.set_attr_val("maskUnits", "userSpaceOnUse")
+        return self
 
     def use(self, href_id_name, relative_coord=None):
         use_obj = Use(href_id_name, relative_coord)
@@ -244,7 +251,7 @@ class Path(Element):
     def init_attrs(self):
         self.reset_path()
         return self
-
+        
     def reset_path(self):
         self.path_strings = []
         self.set_attr_val("d", "")
@@ -320,26 +327,17 @@ class Path(Element):
         return self
 
 
-class Use(Element):
-    tag_name = "use"
-    attr_names = ("xlink:href", "x", "y", "style")
+class Line(Element):
+    tag_name = "line"
+    attr_names = ("id", "x1", "y1", "x2", "y2", "style")
     allow_append = False
 
-    def __init__(self, href_id_name, relative_coord=None):
-        ETElement.__init__(self)
-        self.init_href_id_name(href_id_name)
-        self.set_relative_coord(relative_coord)
-
-    def init_href_id_name(self, href_id_name):
-        self.set_attr_val("xlink:href", "#" + href_id_name)
-        return self
-
-    def set_relative_coord(self, relative_coord):
-        if relative_coord is not None:
-            x, y = relative_coord
-            self.set_attr_val("x", x)
-            self.set_attr_val("y", y)
-        return self
+    def __init__(self, id_name, coord1, coord2):
+        Element.__init__(self, id_name)
+        self.set_attr_val("x1", coord1[0])
+        self.set_attr_val("y1", coord1[1])
+        self.set_attr_val("x2", coord2[0])
+        self.set_attr_val("y2", coord2[1])
 
 
 class Circle(Alignable, Element):
@@ -394,6 +392,28 @@ class Rectangle(Alignable, Element):
             ry = rx
         self.set_attr_val("rx", rx)
         self.set_attr_val("ry", ry)
+        return self
+
+
+class Use(Element):
+    tag_name = "use"
+    attr_names = ("xlink:href", "x", "y", "style")
+    allow_append = False
+
+    def __init__(self, href_id_name, relative_coord=None):
+        ETElement.__init__(self)
+        self.init_href_id_name(href_id_name)
+        self.set_relative_coord(relative_coord)
+
+    def init_href_id_name(self, href_id_name):
+        self.set_attr_val("xlink:href", "#" + href_id_name)
+        return self
+
+    def set_relative_coord(self, relative_coord):
+        if relative_coord is not None:
+            x, y = relative_coord
+            self.set_attr_val("x", x)
+            self.set_attr_val("y", y)
         return self
 
 
