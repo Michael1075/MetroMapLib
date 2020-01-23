@@ -42,6 +42,7 @@ BLACK = Color(0, 0, 0)
 
 # base settings
 DEFAULT_PROJECT_CITY_NAME = "Shanghai"
+DEFAULT_STYLE_FILE_NAME = "default_style"
 DECIMAL_DIGITS = 6
 TOLERANCE = 1e-8
 
@@ -92,4 +93,5 @@ FILE_READY_MSG = "File ready at {0}"
 TIMER_MSG = "Consumed time of function {0}: {1:.3f} second(s)"
 
 # help msgs
-CMD_PARAMETER_HELP_MSG = "name of your target project file"
+CMD_PROJECT_HELP_MSG = "name of your target project file"
+CMD_STYLE_HELP_MSG = "name of the style file (ignore '.py')"

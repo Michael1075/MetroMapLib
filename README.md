@@ -45,27 +45,33 @@ python main.py
 ```
 or the equivalent command:
 ```sh
-python main.py -p Shanghai
+python main.py -p Shanghai -s default_style
 ```
 
-The metro map of Shanghai is a project that has been almost finished. It's also a good example to teach you how to use MetroMapLib.
+The darcula style is also available:
+```sh
+python main.py -s darcula_style
+```
 
-Note, new tex files requires your GPU to run close to its full capacity by multithreading. However, if all tex are settled, the main process does not take long.
+The metro map of Shanghai is a project that has been momentarily finished. It's also a good example to teach you how to use MetroMapLib.
 
 ## Create your own map
 
 You can create your own map by creating a transcript of `template_file` folder. You may rename the transcript folder with its project name. If you've finished configuring `input.json` in the format required, run the following:
 ```sh
-python main.py -p <your-project-name>
+python main.py -p [your_project_name]
 ```
 
 You can also create the metro logo in `metro_logo.svg` under the corresponding project file.
 
-The file `parameters.py` under the project file keeps all parameters of the corresponding project. You can modify some to change its style whatever you like.
+The file `default_style.py` under the project file keeps all parameters of the corresponding project. You can make a transcript and modify some parameters to change its style by running the following:
+```sh
+python main.py -p [your_project_name] -s [your_style_file_name]
+```
 
 The file `construct_json.py` is a tool to config json files, including `input.json` and `tex.json`. Among them `tex.json` stores the path data of tex. If you want to modify the json files under a specific project file, you can run the following:
 ```sh
-python construct_json.py -p <your-project-name>
+python construct_json.py -p [your_project_name]
 ```
 
 You may keep a transcript of your project file if necessary.

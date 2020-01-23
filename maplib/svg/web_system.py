@@ -119,7 +119,7 @@ class WebSystem(Group):
     def add_station_frame(self):
         station_frame_group = Group("station_frame")
         station_frame_group.set_style({
-            "fill": self.params.STATION_FRAME_STYLE["fill_color"],
+            "fill": self.params.GEOGRAPHY_COLORS["land"],
             "fill-opacity": self.params.STATION_FRAME_STYLE["fill_opacity"],
             "stroke-opacity": self.params.STATION_FRAME_STYLE["stroke_opacity"],
         })

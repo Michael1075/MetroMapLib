@@ -155,7 +155,6 @@ class TexFileWriter(Container):
         x_list = []
         y_list = []
         for use in uses:
-            # Remove initial "#" character.
             href_id_name = use.getAttribute("xlink:href")[1:]
             href_num = get_path_id_num_str(href_id_name)
             x = float(use.getAttribute("x"))

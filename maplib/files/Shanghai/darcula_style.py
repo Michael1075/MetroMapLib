@@ -7,6 +7,9 @@ from maplib.utils.color import Color
 # project author
 PROJECT_AUTHOR = "Michael W"
 
+# output file name
+OUTPUT_FILE_NAME = "Shanghai_Metro_Network_Map-darcula"
+
 # svg base
 SVG_VERSION = "1.1"
 SVG_XMLNS = "http://www.w3.org/2000/svg"
@@ -68,10 +71,10 @@ INFO_STRINGS = {
 }
 
 # colors
-MAIN_COLOR = consts.WHITE
+MAIN_COLOR = Color(46, 46, 46)
 GEOGRAPHY_COLORS = {
-    "land": consts.WHITE,
-    "water_area": Color(217, 235, 247),
+    "land": Color(46, 46, 46),
+    "water_area": Color(64, 107, 140),
 }
 
 # styles
@@ -79,7 +82,7 @@ ROUTE_STYLE = {
     "arc_radius": 2.0,
     "stroke_width": 0.8,
     "minor_stroke_width": 0.3,
-    "stroke_opacity": 0.7,
+    "stroke_opacity": 0.9,
 }
 STATION_POINT_STYLE = {
     "radius": 0.4,
@@ -96,10 +99,9 @@ STATION_FRAME_STYLE = {
     },
     "stroke_color": {
         "normal": None,
-        "transfer": consts.BLACK,
+        "transfer": consts.WHITE,
     },
     "stroke_opacity": 0.9,
-    "fill_color": consts.WHITE,
     "fill_opacity": 1.0,
 }
 SIGN_NAME_STYLE = {
@@ -176,20 +178,20 @@ STATION_NAME_TEX_STYLE = {
         consts.CHN: {
             "tex_box_index": 0,
             "scale_factor": 1.4,
-            "font_type": "youyuan",
-            "color": consts.BLACK,
+            "font_type": "heiti",
+            "color": consts.WHITE,
         },
         consts.ENG: {
             "tex_box_index": 1,
             "scale_factor": 1.0,
             "font_type": "sffamily",
-            "color": Color(140, 140, 140),
+            "color": Color(190, 190, 190),
         },
     },
     "shadow": {
         "stroke_width": 0.07,
         "opacity": 0.7,
-        "color": consts.WHITE,
+        "color": Color(46, 46, 46),
     },
 }
 GEOGRAPHIC_NAME_TEX_STYLE = {
@@ -201,13 +203,13 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 2.5,
                 "font_type": "songti",
-                "color": Color(120, 120, 120),
+                "color": Color(170, 170, 170),
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.4,
                 "font_type": "rmfamily",
-                "color": Color(120, 120, 120),
+                "color": Color(170, 170, 170),
             },
         },
     },
@@ -219,13 +221,13 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 2.0,
                 "font_type": "songti",
-                "color": Color(93, 188, 218),
+                "color": Color(147, 203, 221),
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 2.0,
                 "font_type": "rmfamily",
-                "color": Color(93, 188, 218),
+                "color": Color(119, 189, 213),
             },
         },
     },
@@ -237,13 +239,13 @@ GEOGRAPHIC_NAME_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 2.2,
                 "font_type": "songti",
-                "color": Color(93, 188, 218),
+                "color": Color(119, 189, 213),
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.4,
                 "font_type": "rmfamily",
-                "color": Color(93, 188, 218),
+                "color": Color(119, 189, 213),
             },
         },
     },
@@ -294,7 +296,7 @@ MARK_TEX_STYLE = {
         "shadow": {
             "stroke_width": 0.07,
             "opacity": 0.7,
-            "color": consts.WHITE,
+            "color": Color(46, 46, 46),
         },
     },
     "airport": {
@@ -313,7 +315,7 @@ MARK_TEX_STYLE = {
         "shadow": {
             "stroke_width": 0.07,
             "opacity": 0.7,
-            "color": consts.WHITE,
+            "color": Color(46, 46, 46),
         },
     },
 }
@@ -358,13 +360,13 @@ INFO_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 2.4,
                 "font_type": "lishu",
-                "color": consts.BLACK,
+                "color": consts.WHITE,
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.8,
                 "font_type": "sffamily",
-                "color": Color(140, 140, 140),
+                "color": Color(190, 190, 190),
             },
         },
     },
@@ -376,13 +378,13 @@ INFO_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 2.4,
                 "font_type": "heiti",
-                "color": consts.BLACK,
+                "color": consts.WHITE,
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 1.8,
                 "font_type": "sffamily",
-                "color": Color(140, 140, 140),
+                "color": Color(190, 190, 190),
             },
         },
     },
@@ -397,13 +399,13 @@ INFO_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 5.0,
                 "font_type": "heiti",
-                "color": Color(145, 159, 166),
+                "color": Color(160, 168, 185),
             },
             consts.ENG: {
                 "tex_box_index": 1,
                 "scale_factor": 5.0,
                 "font_type": "sffamily",
-                "color": Color(145, 159, 166),
+                "color": Color(160, 168, 185),
             },
         },
     },
@@ -418,7 +420,7 @@ INFO_TEX_STYLE = {
                 "tex_box_index": 0,
                 "scale_factor": 5.0,
                 "font_type": "heiti",
-                "color": Color(145, 159, 166),
+                "color": Color(160, 168, 185),
             },
         },
     },

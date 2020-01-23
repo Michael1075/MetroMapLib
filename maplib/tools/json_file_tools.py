@@ -40,7 +40,6 @@ class JsonTools(Container):
         removed_tex_strings = [tex_obj.string for tex_obj in removed_tex_objs]
         for tex_obj in removed_tex_objs:
             global_tex_dict["file"][tex_obj.font_type].pop(tex_obj.string)
-            # Get difference_set to remove path precisely.
             font_file_dict = global_tex_dict["file"][tex_obj.font_type]
             old_sets = [
                 set(tex_file_dict["h"])

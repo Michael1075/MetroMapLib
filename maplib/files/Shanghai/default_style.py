@@ -7,6 +7,9 @@ from maplib.utils.color import Color
 # project author
 PROJECT_AUTHOR = "Michael W"
 
+# output file name
+OUTPUT_FILE_NAME = "Shanghai_Metro_Network_Map-default"
+
 # svg base
 SVG_VERSION = "1.1"
 SVG_XMLNS = "http://www.w3.org/2000/svg"
@@ -99,7 +102,6 @@ STATION_FRAME_STYLE = {
         "transfer": consts.BLACK,
     },
     "stroke_opacity": 0.9,
-    "fill_color": consts.WHITE,
     "fill_opacity": 1.0,
 }
 SIGN_NAME_STYLE = {

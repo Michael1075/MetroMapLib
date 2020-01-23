@@ -372,7 +372,7 @@ class LegendGroup(Group, Alignable):
     def append_marks(self, mark_frames):
         station_frame_style = self.params.STATION_FRAME_STYLE
         station_frame_style_dict = {
-            "fill": station_frame_style["fill_color"],
+            "fill": self.params.GEOGRAPHY_COLORS["land"],
             "fill-opacity": station_frame_style["fill_opacity"],
             "stroke-opacity": station_frame_style["stroke_opacity"],
         }
